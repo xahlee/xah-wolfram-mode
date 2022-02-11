@@ -3,7 +3,7 @@
 ;; Copyright © 2021-2022 by Xah Lee
 
 ;; Author: Xah Lee ( http://xahlee.info/ )
-;; Version: 1.8.20211027203232
+;; Version: 1.8.20220211090001
 ;; Created: 24 July 2021
 ;; Package-Requires: ((emacs "25.1"))
 ;; Keywords: languages, Wolfram Language, Mathematica
@@ -1941,8 +1941,8 @@ Version: 2021-10-27"
 "TubeBox" "TubeBoxOptions" "TubeBSplineCurveBox"
 "TubeBSplineCurveBoxOptions" "Tuesday" "TukeyLambdaDistribution"
 "TukeyWindow" "TunnelData" "Tuples" "TuranGraph" "TuringMachine"
-"TuttePolynomial" "TwoWayRule" "Typed" "TypeSpecifier" "uMax"
-"uMax$$" "UnateQ" "Uncompress" "UnconstrainedParameters" "Undefined"
+"TuttePolynomial" "TwoWayRule" "Typed" "TypeSpecifier" 
+"UnateQ" "Uncompress" "UnconstrainedParameters" "Undefined"
 "UnderBar" "Underflow" "Underlined" "Underoverscript"
 "UnderoverscriptBox" "UnderoverscriptBoxOptions" "Underscript"
 "UnderscriptBox" "UnderscriptBoxOptions" "UnderseaFeatureData"
@@ -2246,55 +2246,59 @@ Version: 2016-10-24"
 
     ;;
 
-    ("pt" " //Print" xah-wolfram--ahf)
-
     ("cos" "Cos" xah-wolfram--ahf)
     ("deg" "°" xah-wolfram--ahf)
-
     ("eq" "== " xah-wolfram--ahf)
     ("eqq" "=== " xah-wolfram--ahf)
-    ("false" "False" xah-wolfram--ahf)
     ("fn" "((#▮) &)" xah-wolfram--ahf)
+    ("pt" " //Print" xah-wolfram--ahf)
+    ("ra" "-> ▮" xah-wolfram--ahf)
+    ("set" "= " xah-wolfram--ahf)
 
+    ;;
+
+    ("false" "False" xah-wolfram--ahf)
+    ("ff" "FullForm" xah-wolfram--ahf)
+    ("fun" "Function" xah-wolfram--ahf)
     ("g3d" "Graphics3D" xah-wolfram--ahf)
     ("gc" "GraphicsComplex[▮,]" xah-wolfram--ahf)
     ("gra" "Graphics" xah-wolfram--ahf)
-    ("md" "Module[{▮},]" xah-wolfram--ahf)
+    ("if" "If" xah-wolfram--ahf)
+    ("map" "Map" xah-wolfram--ahf)
+    ("md" "Module" xah-wolfram--ahf)
+    ("module" "Module" xah-wolfram--ahf)
+    ("pi" "Pi" xah-wolfram--ahf)
     ("pp3" "ParametricPlot3D" xah-wolfram--ahf)
-    ("ra" "-> ▮" xah-wolfram--ahf)
+    ("pp3d" "ParametricPlot3D"  xah-wolfram--ahf)
+    ("pr" "PlotRange" xah-wolfram--ahf)
     ("range" "Range" xah-wolfram--ahf)
-    ("set" "= " xah-wolfram--ahf)
     ("sin" "Sin" xah-wolfram--ahf)
+    ("sl" "StringLength" xah-wolfram--ahf)
     ("table" "Table" xah-wolfram--ahf)
     ("tan" "Tan" xah-wolfram--ahf)
     ("true" "True" xah-wolfram--ahf)
-    ("if" "If" xah-wolfram--ahf)
     ("with" "With" xah-wolfram--ahf)
-    ("module" "Module" xah-wolfram--ahf)
-    ("fun" "Function" xah-wolfram--ahf)
-    ("map" "Map" xah-wolfram--ahf)
-    ("pr" "PlotRange->9▮" xah-wolfram--ahf)
-    ("sl" "StringLength[▮]" xah-wolfram--ahf)
-    ("ff" "FullForm" xah-wolfram--ahf)
-    ("n" "//N" xah-wolfram--ahf)
+
     ;;
 
-    ("Cos" "Cos[▮]" xah-wolfram--ahf)
-    ("GeometricTransformation" "GeometricTransformation[▮,tf]" xah-wolfram--ahf)
-
-    ("Map" "Map[▮, list,{1}]" xah-wolfram--ahf)
+    ("Cos" "Cos[x▮]" xah-wolfram--ahf)
     ("Degree" "°" xah-wolfram--ahf)
+    ("Function" "Function[{x▮},expr]" xah-wolfram--ahf)
+    ("GeometricTransformation" "GeometricTransformation[▮,tf]" xah-wolfram--ahf)
     ("Graphics" "Graphics[▮, Axes -> True ]" xah-wolfram--ahf)
     ("Graphics3D" "Graphics3D[▮, Axes -> True ]" xah-wolfram--ahf)
     ("If" "If[▮,y,n]" xah-wolfram--ahf)
-    ("ParametricPlot3D" "ParametricPlot3D[\n {f1▮, f2, f3},\n {u,0,5}, {v,0,5} ]" xah-wolfram--ahf)
+    ("Map" "Map[▮, list,{1}]" xah-wolfram--ahf)
+    ("Module" "Module[{x=2▮},expr]" xah-wolfram--ahf)
+    ("ParametricPlot3D" "ParametricPlot3D[\n{Cos[u]*(2 + 1*Cos[v]), Sin[u]*(2 + 1*Cos[v]), 1*Sin[v]} , \n{u, 0, 6}, \n{v, 0, 6}, \n PlotPoints -> 100,\n Axes -> True,\n Boxed -> True,\n BoundaryStyle -> Directive[Black, Thin],\n PlotStyle -> Directive[White, Opacity[0.7], Specularity[10, 20]],\n Lighting -> \"Neutral\"]\n\n" xah-wolfram--ahf)
+    ("Plot" "Plot[ Sin[x], {x, 1, 9}]" xah-wolfram--ahf)
+    ("PlotRange" "PlotRange->{9▮}" xah-wolfram--ahf)
     ("Range" "Range[▮]" xah-wolfram--ahf)
     ("Sin" "Sin[▮]" xah-wolfram--ahf)
-    ("Table" "Table[▮,{x,n,m}]" xah-wolfram--ahf)
+    ("Table" "Table[▮, {x, 1, 9}]" xah-wolfram--ahf)
     ("Tan" "Tan[▮]" xah-wolfram--ahf)
     ("With" "With[{x=2▮},expr]" xah-wolfram--ahf)
-    ("Function" "Function[{x▮},expr]" xah-wolfram--ahf)
-    ("Module" "Module[{x=2▮},expr]" xah-wolfram--ahf)
+
     ;;
     )
 
