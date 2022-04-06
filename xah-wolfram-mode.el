@@ -3,7 +3,7 @@
 ;; Copyright © 2021-2022 by Xah Lee
 
 ;; Author: Xah Lee ( http://xahlee.info/ )
-;; Version: 1.8.20220211090001
+;; Version: 1.9.20220406022855
 ;; Created: 24 July 2021
 ;; Package-Requires: ((emacs "25.1"))
 ;; Keywords: languages, Wolfram Language, Mathematica
@@ -13,7 +13,7 @@
 
 ;;; Commentary:
 
-;; HHH___________________________________________________________________
+;; ssss---------------------------------------------------
 ;;; Code:
 
 (defun xah-run-wolfram-script (&optional OptStr CurrentPrefixArg)
@@ -2161,7 +2161,7 @@ Version: 2021-10-27"
        xah-wolfram-dollar-names
        ))
 
-;; HHH___________________________________________________________________
+;; ssss---------------------------------------------------
 
 (defun xah-wolfram-doc-lookup ()
   "Look up the symbol under cursor in Wolfram doc site in web browser.
@@ -2180,7 +2180,7 @@ Version: 2021-08-06"
   (interactive)
   (insert ";\n"))
 
-;; HHH___________________________________________________________________
+;; ssss---------------------------------------------------
 ;; abbrev
 
 (defun xah-wolfram-abbrev-enable-function ()
@@ -2310,7 +2310,7 @@ Version: 2016-10-24"
 (abbrev-table-put xah-wolfram-mode-abbrev-table :system t)
 (abbrev-table-put xah-wolfram-mode-abbrev-table :enable-function 'xah-wolfram-abbrev-enable-function)
 
-;; HHH___________________________________________________________________
+;; ssss---------------------------------------------------
 ;; indent/reformat related
 
 (defun xah-wolfram-complete-or-indent ()
@@ -2413,7 +2413,7 @@ Version: 2021-07-25 2021-09-22"
       ["\n\n\n+" "\n\n"]
       ] )))
 
-;; HHH___________________________________________________________________
+;; ssss---------------------------------------------------
 ;; completion
 
 (defun xah-wolfram-complete-symbol ()
@@ -2436,7 +2436,7 @@ version 2017-01-27 2021-10-28"
     (insert $resultSym "[  ]")
     (backward-char 2)))
 
-;; HHH___________________________________________________________________
+;; ssss---------------------------------------------------
 ;; syntax table
 (defvar xah-wolfram-mode-syntax-table nil "Syntax table for `xah-wolfram-mode'.")
 
@@ -2486,7 +2486,7 @@ version 2017-01-27 2021-10-28"
 
    synTable))
 
-;; HHH___________________________________________________________________
+;; ssss---------------------------------------------------
 ;; syntax coloring related
 
 (defface xah-wolfram-var-name
@@ -2521,18 +2521,20 @@ version 2017-01-27 2021-10-28"
      ;;
 )))
 
-;; HHH___________________________________________________________________
+;; ssss---------------------------------------------------
 ;; keybinding
 
 (defvar xah-wolfram-mode-map nil "Keybinding for `xah-wolfram-mode'")
 (progn
   (setq xah-wolfram-mode-map (make-sparse-keymap))
   (define-prefix-command 'xah-wolfram-leader-map)
-  (define-key xah-wolfram-mode-map (kbd "TAB") 'xah-wolfram-complete-or-indent)
-  (define-key xah-wolfram-mode-map (kbd "<f9>") xah-wolfram-leader-map)
+
+  (define-key xah-wolfram-mode-map (if (boundp 'xahemacs-major-mode-leader-key) xahemacs-major-mode-leader-key (kbd "TAB")) xah-wolfram-leader-map)
+
+  (define-key xah-wolfram-leader-map (kbd "TAB") 'xah-wolfram-complete-or-indent)
   (define-key xah-wolfram-leader-map (kbd "f") 'xah-wolfram-format-pretty)
   (define-key xah-wolfram-leader-map (kbd "t") 'xah-wolfram-replace-special-char)
-  (define-key xah-wolfram-leader-map (kbd "TAB") 'xah-wolfram-complete-symbol)
+  (define-key xah-wolfram-leader-map (kbd "e") 'xah-wolfram-complete-symbol)
   (define-key xah-wolfram-leader-map (kbd "h") 'xah-wolfram-doc-lookup)
   (define-key xah-wolfram-leader-map (kbd "c") 'xah-wolfram-format-compact)
   (define-key xah-wolfram-leader-map (kbd "r") 'xah-run-wolfram-script)
@@ -2540,7 +2542,7 @@ version 2017-01-27 2021-10-28"
 
   (define-key xah-wolfram-leader-map (kbd "<return>") 'xah-wolfram-smart-newline))
 
-;; HHH___________________________________________________________________
+;; ssss---------------------------------------------------
 
 ;;;###autoload
 (define-derived-mode xah-wolfram-mode prog-mode "∑Wolfram"
