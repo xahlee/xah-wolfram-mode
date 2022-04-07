@@ -3,7 +3,7 @@
 ;; Copyright © 2021-2022 by Xah Lee
 
 ;; Author: Xah Lee ( http://xahlee.info/ )
-;; Version: 1.9.20220406022855
+;; Version: 1.10.20220407143211
 ;; Created: 24 July 2021
 ;; Package-Requires: ((emacs "25.1"))
 ;; Keywords: languages, Wolfram Language, Mathematica
@@ -23,21 +23,23 @@ The current file should have extension wls wl m nb.
 When `universal-argument' is called first, prompt user to give wolframscript command line options. (“-file name” is always used.)
 
 If the file is modified or not saved, save it automatically before run.
-Version: 2021-10-27"
+Version: 2021-10-27 2022-04-07"
   (interactive)
   (let ($userSay $cmdStr $optionsStr)
     (setq $userSay
           (if OptStr
               OptStr
             (if (or CurrentPrefixArg current-prefix-arg)
-                (substring (ido-completing-read
-                            "wolframscript additional options:"
-                            '(
-                              "1 → -print"
-                              "2 → -print all"
-                              "3 → Ask"
-                              "4 → None"
-                              )) 4)
+                (substring
+                 (completing-read
+                    "wolframscript additional options:"
+                    '(
+                      "1 → -print"
+                      "2 → -print all"
+                      "3 → Ask"
+                      "4 → None"
+                      ))
+                 4)
               ""
               )))
     (when (not (buffer-file-name)) (save-buffer))
@@ -2418,8 +2420,8 @@ Version: 2021-07-25 2021-09-22"
 
 (defun xah-wolfram-complete-symbol ()
   "Perform keyword completion on current symbol.
-This uses `ido-mode' user interface for completion.
-version 2017-01-27 2021-10-28"
+
+version 2017-01-27 2021-10-28 2022-04-07"
   (interactive)
   (let* (($bds (bounds-of-thing-at-point 'symbol))
          ($p1 (car $bds))
@@ -2430,8 +2432,7 @@ version 2017-01-27 2021-10-28"
             (buffer-substring-no-properties $p1 $p2)))
          $resultSym)
     (when (not $curSym) (setq $curSym ""))
-    (setq $resultSym
-          (ido-completing-read "" xah-wolfram-all-symbols nil nil $curSym))
+    (setq $resultSym (completing-read "" xah-wolfram-all-symbols nil nil $curSym))
     (delete-region $p1 $p2)
     (insert $resultSym "[  ]")
     (backward-char 2)))
@@ -2529,7 +2530,11 @@ version 2017-01-27 2021-10-28"
   (setq xah-wolfram-mode-map (make-sparse-keymap))
   (define-prefix-command 'xah-wolfram-leader-map)
 
-  (define-key xah-wolfram-mode-map (if (boundp 'xahemacs-major-mode-leader-key) xahemacs-major-mode-leader-key (kbd "TAB")) xah-wolfram-leader-map)
+  (define-key xah-wolfram-mode-map
+    (if (boundp 'xahemacs-major-mode-leader-key)
+        xahemacs-major-mode-leader-key
+      (kbd "TAB"))
+    xah-wolfram-leader-map)
 
   (define-key xah-wolfram-leader-map (kbd "TAB") 'xah-wolfram-complete-or-indent)
   (define-key xah-wolfram-leader-map (kbd "f") 'xah-wolfram-format-pretty)
