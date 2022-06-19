@@ -3,7 +3,7 @@
 ;; Copyright © 2021-2022 by Xah Lee
 
 ;; Author: Xah Lee ( http://xahlee.info/ )
-;; Version: 1.10.20220407143211
+;; Version: 1.11.20220619152730
 ;; Created: 24 July 2021
 ;; Package-Requires: ((emacs "25.1"))
 ;; Keywords: languages, Wolfram Language, Mathematica
@@ -13,7 +13,7 @@
 
 ;;; Commentary:
 
-;; ssss---------------------------------------------------
+
 ;;; Code:
 
 (defun xah-run-wolfram-script (&optional OptStr CurrentPrefixArg)
@@ -32,13 +32,13 @@ Version: 2021-10-27 2022-04-07"
             (if (or CurrentPrefixArg current-prefix-arg)
                 (substring
                  (completing-read
-                    "wolframscript additional options:"
-                    '(
-                      "1 → -print"
-                      "2 → -print all"
-                      "3 → Ask"
-                      "4 → None"
-                      ))
+                  "wolframscript additional options:"
+                  '(
+                    "1 → -print"
+                    "2 → -print all"
+                    "3 → Ask"
+                    "4 → None"
+                    ))
                  4)
               ""
               )))
@@ -2163,7 +2163,7 @@ Version: 2021-10-27"
        xah-wolfram-dollar-names
        ))
 
-;; ssss---------------------------------------------------
+
 
 (defun xah-wolfram-doc-lookup ()
   "Look up the symbol under cursor in Wolfram doc site in web browser.
@@ -2182,7 +2182,7 @@ Version: 2021-08-06"
   (interactive)
   (insert ";\n"))
 
-;; ssss---------------------------------------------------
+
 ;; abbrev
 
 (defun xah-wolfram-abbrev-enable-function ()
@@ -2312,7 +2312,7 @@ Version: 2016-10-24"
 (abbrev-table-put xah-wolfram-mode-abbrev-table :system t)
 (abbrev-table-put xah-wolfram-mode-abbrev-table :enable-function 'xah-wolfram-abbrev-enable-function)
 
-;; ssss---------------------------------------------------
+
 ;; indent/reformat related
 
 (defun xah-wolfram-complete-or-indent ()
@@ -2415,7 +2415,7 @@ Version: 2021-07-25 2021-09-22"
       ["\n\n\n+" "\n\n"]
       ] )))
 
-;; ssss---------------------------------------------------
+
 ;; completion
 
 (defun xah-wolfram-complete-symbol ()
@@ -2437,7 +2437,7 @@ version 2017-01-27 2021-10-28 2022-04-07"
     (insert $resultSym "[  ]")
     (backward-char 2)))
 
-;; ssss---------------------------------------------------
+
 ;; syntax table
 (defvar xah-wolfram-mode-syntax-table nil "Syntax table for `xah-wolfram-mode'.")
 
@@ -2452,10 +2452,10 @@ version 2017-01-27 2021-10-28 2022-04-07"
    ;; (modify-syntax-entry ?\{ "(}" synTable)
    ;; (modify-syntax-entry ?\} "){" synTable)
 
-   ;; comment
-   (modify-syntax-entry ?\( "()1" synTable)
-   (modify-syntax-entry ?\) ")(4" synTable)
-   (modify-syntax-entry ?* ". 23" synTable)
+   ;; ;; comment
+   ;; (modify-syntax-entry ?\( "()1" synTable)
+   ;; (modify-syntax-entry ?\) ")(4" synTable)
+   ;; (modify-syntax-entry ?* ". 23" synTable)
 
    ;; symbol
    (modify-syntax-entry ?$ "_" synTable)
@@ -2487,7 +2487,7 @@ version 2017-01-27 2021-10-28 2022-04-07"
 
    synTable))
 
-;; ssss---------------------------------------------------
+
 ;; syntax coloring related
 
 (defface xah-wolfram-var-name
@@ -2522,7 +2522,7 @@ version 2017-01-27 2021-10-28 2022-04-07"
      ;;
 )))
 
-;; ssss---------------------------------------------------
+
 ;; keybinding
 
 (defvar xah-wolfram-mode-map nil "Keybinding for `xah-wolfram-mode'")
@@ -2547,7 +2547,7 @@ version 2017-01-27 2021-10-28 2022-04-07"
 
   (define-key xah-wolfram-leader-map (kbd "<return>") 'xah-wolfram-smart-newline))
 
-;; ssss---------------------------------------------------
+
 
 ;;;###autoload
 (define-derived-mode xah-wolfram-mode prog-mode "∑Wolfram"
@@ -2564,9 +2564,6 @@ version 2017-01-27 2021-10-28 2022-04-07"
 
   (abbrev-mode 1)
 
-  (progn
-    (make-local-variable 'ido-decorations)
-    (setf (nth 2 ido-decorations) "\n"))
   :group 'xah-wolfram-mode
   )
 
