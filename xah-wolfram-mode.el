@@ -3,7 +3,7 @@
 ;; Copyright © 2021-2022 by Xah Lee
 
 ;; Author: Xah Lee ( http://xahlee.info/ )
-;; Version: 1.11.20220619152730
+;; Version: 1.11.20220623215408
 ;; Created: 24 July 2021
 ;; Package-Requires: ((emacs "25.1"))
 ;; Keywords: languages, Wolfram Language, Mathematica
@@ -2452,10 +2452,10 @@ version 2017-01-27 2021-10-28 2022-04-07"
    ;; (modify-syntax-entry ?\{ "(}" synTable)
    ;; (modify-syntax-entry ?\} "){" synTable)
 
-   ;; ;; comment
-   ;; (modify-syntax-entry ?\( "()1" synTable)
-   ;; (modify-syntax-entry ?\) ")(4" synTable)
-   ;; (modify-syntax-entry ?* ". 23" synTable)
+   ;; comment
+   (modify-syntax-entry ?\( "()1n" synTable)
+   (modify-syntax-entry ?\) ")(4n" synTable)
+   (modify-syntax-entry ?* ". 23n" synTable)
 
    ;; symbol
    (modify-syntax-entry ?$ "_" synTable)
