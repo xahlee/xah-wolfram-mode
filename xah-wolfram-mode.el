@@ -3,7 +3,7 @@
 ;; Copyright © 2021-2022 by Xah Lee
 
 ;; Author: Xah Lee ( http://xahlee.info/ )
-;; Version: 1.11.20220623215408
+;; Version: 1.11.20220916203524
 ;; Created: 24 July 2021
 ;; Package-Requires: ((emacs "25.1"))
 ;; Keywords: languages, Wolfram Language, Mathematica
@@ -2387,7 +2387,7 @@ Version: 2021-08-01 2021-09-22"
 (defun xah-wolfram-format-pretty ()
   "Format current block in readable style.
 todo.
-Version: 2021-07-25 2021-09-22"
+Version: 2021-07-25 2021-09-22 2022-09-14"
   (interactive)
   (require 'xah-replace-pairs)
   (let* (($bds (xah-get-bounds-of-thing-or-region 'block))
@@ -2399,18 +2399,32 @@ Version: 2021-07-25 2021-09-22"
       ;; before after comma
       ["\\([]}A-Za-z0-9]\\) ," "\\1,"]
       [",\\([#({A-Za-z0-9]\\)" ", \\1"]
+
+      ;; before after plus
+      ["\\([A-Za-z0-9]\\)\\+" "\\1 +"]
+      ["\\+\\([(A-Za-z0-9]\\)" "+ \\1"]
+
       ;; before after equal
       ["\\([A-Za-z0-9]\\)=" "\\1 ="]
       ["=\\([(A-Za-z0-9]\\)" "= \\1"]
+
+      ;; before after colon equal
+      ["\\(\\]\\):=" "\\1 :="]
+      [":=\\(\\]\\)" ":= \\1"]
+
+      ;; ["\\([A-Za-z0-9]\\):=" "\\1 :="]
+      ;; [":=\\([(A-Za-z0-9]\\)" ":= \\1"]
+
       ;; before after /@
       ["\\([)&A-Za-z]\\)/@" "\\1 /@"]
       ["/@\\([(A-Za-z]\\)" "/@ \\1"]
+
       ["\n;" ";"]
       ] t )
     (xah-replace-regexp-pairs-region
      $p1 $p2
      [
-      [" := " ":="]
+      ;; [" := " ":="]
       ["]:>" "] :>"]
       ["\n\n\n+" "\n\n"]
       ] )))
