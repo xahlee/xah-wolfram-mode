@@ -3,7 +3,7 @@
 ;; Copyright © 2021-2022 by Xah Lee
 
 ;; Author: Xah Lee ( http://xahlee.info/ )
-;; Version: 1.11.20220916203524
+;; Version: 1.12.20220922145724
 ;; Created: 24 July 2021
 ;; Package-Requires: ((emacs "25.1"))
 ;; Keywords: languages, Wolfram Language, Mathematica
@@ -2297,7 +2297,7 @@ Version: 2016-10-24"
     ("PlotRange" "PlotRange->{9▮}" xah-wolfram--ahf)
     ("Range" "Range[▮]" xah-wolfram--ahf)
     ("Sin" "Sin[▮]" xah-wolfram--ahf)
-    ("Table" "Table[▮, {x, 1, 9}]" xah-wolfram--ahf)
+    ("Table" "Table[ ▮, {x, 1, 9}]" xah-wolfram--ahf)
     ("Tan" "Tan[▮]" xah-wolfram--ahf)
     ("With" "With[{x=2▮},expr]" xah-wolfram--ahf)
 
@@ -2387,7 +2387,7 @@ Version: 2021-08-01 2021-09-22"
 (defun xah-wolfram-format-pretty ()
   "Format current block in readable style.
 todo.
-Version: 2021-07-25 2021-09-22 2022-09-14"
+Version: 2021-07-25 2021-09-22 2022-09-14 2022-09-21"
   (interactive)
   (require 'xah-replace-pairs)
   (let* (($bds (xah-get-bounds-of-thing-or-region 'block))
@@ -2396,38 +2396,53 @@ Version: 2021-07-25 2021-09-22 2022-09-14"
     (xah-replace-regexp-pairs-region
      $p1 $p2
      [
-      ;; before after comma
+      ;; before comma
       ["\\([]}A-Za-z0-9]\\) ," "\\1,"]
+      ;; after comma
       [",\\([#({A-Za-z0-9]\\)" ", \\1"]
 
-      ;; before after plus
+      ;; before plus
       ["\\([A-Za-z0-9]\\)\\+" "\\1 +"]
+      ;; after plus
       ["\\+\\([(A-Za-z0-9]\\)" "+ \\1"]
 
-      ;; before after equal
+      ;; before equal
       ["\\([A-Za-z0-9]\\)=" "\\1 ="]
+      ;; after equal
       ["=\\([(A-Za-z0-9]\\)" "= \\1"]
 
-      ;; before after colon equal
+      ;; before colon equal
       ["\\(\\]\\):=" "\\1 :="]
+      ;; after colon equal
       [":=\\(\\]\\)" ":= \\1"]
+
+      ;; before triple equal
+      ["\\([]A-Za-z0-9]\\) *===" "\\1 ==="]
+      ;; after triple equal
+      ["===\\([(A-Za-z0-9]\\)" " === \\1"]
+
+      ;; before double equal
+      ["\\([]A-Za-z0-9]\\)==" "\\1 =="]
+      ;; after double equal
+      ["==\\([(A-Za-z0-9]\\)" " == \\1"]
 
       ;; ["\\([A-Za-z0-9]\\):=" "\\1 :="]
       ;; [":=\\([(A-Za-z0-9]\\)" ":= \\1"]
 
-      ;; before after /@
+      ;; before slash at
       ["\\([)&A-Za-z]\\)/@" "\\1 /@"]
+      ;; after slash at
       ["/@\\([(A-Za-z]\\)" "/@ \\1"]
 
       ["\n;" ";"]
-      ] t )
+      ] t)
     (xah-replace-regexp-pairs-region
      $p1 $p2
      [
       ;; [" := " ":="]
       ["]:>" "] :>"]
       ["\n\n\n+" "\n\n"]
-      ] )))
+      ])))
 
 
 ;; completion
