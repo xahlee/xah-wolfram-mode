@@ -3,7 +3,7 @@
 ;; Copyright © 2021-2022 by Xah Lee
 
 ;; Author: Xah Lee ( http://xahlee.info/ )
-;; Version: 1.12.20220922145724
+;; Version: 1.13.20221020125351
 ;; Created: 24 July 2021
 ;; Package-Requires: ((emacs "25.1"))
 ;; Keywords: languages, Wolfram Language, Mathematica
@@ -2560,8 +2560,8 @@ version 2017-01-27 2021-10-28 2022-04-07"
   (define-prefix-command 'xah-wolfram-leader-map)
 
   (define-key xah-wolfram-mode-map
-    (if (boundp 'xahemacs-major-mode-leader-key)
-        xahemacs-major-mode-leader-key
+    (if (boundp 'xah-major-mode-leader-key)
+        xah-major-mode-leader-key
       (kbd "TAB"))
     xah-wolfram-leader-map)
 
