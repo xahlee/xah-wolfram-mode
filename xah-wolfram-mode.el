@@ -3,7 +3,7 @@
 ;; Copyright © 2021-2022 by Xah Lee
 
 ;; Author: Xah Lee ( http://xahlee.info/ )
-;; Version: 1.13.20221020125351
+;; Version: 1.13.20221225104919
 ;; Created: 24 July 2021
 ;; Package-Requires: ((emacs "25.1"))
 ;; Keywords: languages, Wolfram Language, Mathematica
@@ -2295,10 +2295,7 @@ Version: 2016-10-24"
     ("ParametricPlot3D" "ParametricPlot3D[\n{Cos[u]*(2 + 1*Cos[v]), Sin[u]*(2 + 1*Cos[v]), 1*Sin[v]} , \n{u, 0, 6}, \n{v, 0, 6}, \n PlotPoints -> 100,\n Axes -> True,\n Boxed -> True,\n BoundaryStyle -> Directive[Black, Thin],\n PlotStyle -> Directive[White, Opacity[0.7], Specularity[10, 20]],\n Lighting -> \"Neutral\"]\n\n" xah-wolfram--ahf)
     ("Plot" "Plot[ Sin[x], {x, 1, 9}]" xah-wolfram--ahf)
     ("PlotRange" "PlotRange->{9▮}" xah-wolfram--ahf)
-    ("Range" "Range[▮]" xah-wolfram--ahf)
-    ("Sin" "Sin[▮]" xah-wolfram--ahf)
     ("Table" "Table[ ▮, {x, 1, 9}]" xah-wolfram--ahf)
-    ("Tan" "Tan[▮]" xah-wolfram--ahf)
     ("With" "With[{x=2▮},expr]" xah-wolfram--ahf)
 
     ;;
