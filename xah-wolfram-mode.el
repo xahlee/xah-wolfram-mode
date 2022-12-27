@@ -2593,9 +2593,13 @@ version 2017-01-27 2021-10-28 2022-04-07"
   :group 'xah-wolfram-mode
   )
 
+;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.wl\\'" . xah-wolfram-mode))
+;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.wls\\'" . xah-wolfram-mode))
+;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.m\\'" . xah-wolfram-mode))
+;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.nb\\'" . xah-wolfram-mode))
 
 (provide 'xah-wolfram-mode)
