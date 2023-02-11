@@ -3,15 +3,55 @@
 ;; Copyright © 2021-2022 by Xah Lee
 
 ;; Author: Xah Lee ( http://xahlee.info/ )
-;; Version: 1.13.20221225104919
+;; Version: 1.14.20230211120535
 ;; Created: 24 July 2021
-;; Package-Requires: ((emacs "25.1"))
+;; Package-Requires: ((emacs "27"))
 ;; Keywords: languages, Wolfram Language, Mathematica
 ;; Homepage: http://xahlee.info/emacs/misc/xah-wolfram-mode.html
 
 ;; This file is not part of GNU Emacs.
 
 ;;; Commentary:
+
+;; Major mode for editing Wolfram Language (aka Mathematica) code
+
+;;; Installation:
+;; here's how to manual install
+;; 
+;; put the file
+;; xah-wolfram-mode.el
+;; in
+;; ~/.emacs.d/lisp/
+;; create the dir if doesn't exist.
+;; 
+;; put the following in your emacs init file:
+;; 
+;; (add-to-list 'load-path "~/.emacs.d/lisp/")
+;; (require 'xah-wolfram-mode)
+
+;;; How to use:
+;; 
+;; M-x xah-wolfram-mode to toggle the mode on/off.
+;; 
+;; command and keys
+;; 
+;; TAB TAB         xah-wolfram-complete-or-indent
+;; TAB c           xah-wolfram-format-compact
+;; TAB e           xah-wolfram-complete-symbol
+;; TAB f           xah-wolfram-format-pretty
+;; TAB h           xah-wolfram-doc-lookup
+;; TAB p           xah-run-wolfram-script-print-all
+;; TAB r           xah-run-wolfram-script
+;; TAB t           xah-wolfram-replace-special-char
+;; TAB <return>    xah-wolfram-smart-newline
+
+;;; Customization:
+;; 
+;; all keybinding for this mode are key sequences, starting with a leader key stored in this variable
+;; xah-major-mode-leader-key
+;; by default, it's TAB key.
+;; you can change it by put this in your emacs init, before loading the mode
+;; (setq xah-major-mode-leader-key (kbd "<f6>"))
 
 
 ;;; Code:
@@ -42,15 +82,15 @@ Version: 2021-10-27 2022-04-07"
                  4)
               ""
               )))
-    (when (not (buffer-file-name)) (save-buffer))
-    (when (buffer-modified-p) (save-buffer))
+    (if buffer-file-name nil (save-buffer))
+    (if (buffer-modified-p) (save-buffer) nil )
     (setq $optionsStr
           (cond
            ((string-equal $userSay "None") "")
            ((string-equal $userSay "Ask")
             (read-string "extra options:" ""))
            (t $userSay)))
-    (setq $cmdStr (format  "wolframscript -file %s %s" (shell-quote-argument (buffer-file-name))  $optionsStr))
+    (setq $cmdStr (format  "wolframscript -file %s %s" (shell-quote-argument buffer-file-name)  $optionsStr))
     ;; (message "Runing 「%s」" $cmdStr)
     (shell-command $cmdStr "*wolframscript output*")))
 
@@ -1943,7 +1983,7 @@ Version: 2021-10-27"
 "TubeBox" "TubeBoxOptions" "TubeBSplineCurveBox"
 "TubeBSplineCurveBoxOptions" "Tuesday" "TukeyLambdaDistribution"
 "TukeyWindow" "TunnelData" "Tuples" "TuranGraph" "TuringMachine"
-"TuttePolynomial" "TwoWayRule" "Typed" "TypeSpecifier" 
+"TuttePolynomial" "TwoWayRule" "Typed" "TypeSpecifier"
 "UnateQ" "Uncompress" "UnconstrainedParameters" "Undefined"
 "UnderBar" "Underflow" "Underlined" "Underoverscript"
 "UnderoverscriptBox" "UnderoverscriptBoxOptions" "Underscript"
@@ -2177,7 +2217,7 @@ Version: 2021-07-25 2021-09-15 2021-09-20"
     (browse-url $url)))
 
 (defun xah-wolfram-smart-newline ()
-  "Insert a newline, maybe add a semicolon before.
+  "Insert a semicolon and a newline.
 Version: 2021-08-06"
   (interactive)
   (insert ";\n"))
