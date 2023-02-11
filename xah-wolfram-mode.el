@@ -2592,26 +2592,27 @@ version 2017-01-27 2021-10-28 2022-04-07"
 ;; keybinding
 
 (defvar xah-wolfram-mode-map nil "Keybinding for `xah-wolfram-mode'")
-(progn
-  (setq xah-wolfram-mode-map (make-sparse-keymap))
-  (define-prefix-command 'xah-wolfram-leader-map)
+(setq xah-wolfram-mode-map (make-sparse-keymap))
+(define-prefix-command 'xah-wolfram-leader-map)
 
-  (define-key xah-wolfram-mode-map
-    (if (boundp 'xah-major-mode-leader-key)
-        xah-major-mode-leader-key
-      (kbd "TAB"))
-    xah-wolfram-leader-map)
+(defcustom xah-wolfram-leader-key "TAB"
+  "Leader key for `xah-wolfram-leader-map'.  Set to nil to disable."
+  :group 'xah-wolfram-mode
+  :type 'string)
 
-  (define-key xah-wolfram-leader-map (kbd "TAB") 'xah-wolfram-complete-or-indent)
-  (define-key xah-wolfram-leader-map (kbd "f") 'xah-wolfram-format-pretty)
-  (define-key xah-wolfram-leader-map (kbd "t") 'xah-wolfram-replace-special-char)
-  (define-key xah-wolfram-leader-map (kbd "e") 'xah-wolfram-complete-symbol)
-  (define-key xah-wolfram-leader-map (kbd "h") 'xah-wolfram-doc-lookup)
-  (define-key xah-wolfram-leader-map (kbd "c") 'xah-wolfram-format-compact)
-  (define-key xah-wolfram-leader-map (kbd "r") 'xah-run-wolfram-script)
-  (define-key xah-wolfram-leader-map (kbd "p") 'xah-run-wolfram-script-print-all)
+;; Only define the key if xah-wolfram-leader-key is non-nil.
+(when xah-wolfram-leader-key
+  (define-key xah-wolfram-mode-map (kbd xah-wolfram-leader-key) xah-wolfram-leader-map))
 
-  (define-key xah-wolfram-leader-map (kbd "<return>") 'xah-wolfram-smart-newline))
+(define-key xah-wolfram-leader-map (kbd "TAB") 'xah-wolfram-complete-or-indent)
+(define-key xah-wolfram-leader-map (kbd "f") 'xah-wolfram-format-pretty)
+(define-key xah-wolfram-leader-map (kbd "t") 'xah-wolfram-replace-special-char)
+(define-key xah-wolfram-leader-map (kbd "e") 'xah-wolfram-complete-symbol)
+(define-key xah-wolfram-leader-map (kbd "h") 'xah-wolfram-doc-lookup)
+(define-key xah-wolfram-leader-map (kbd "c") 'xah-wolfram-format-compact)
+(define-key xah-wolfram-leader-map (kbd "r") 'xah-run-wolfram-script)
+(define-key xah-wolfram-leader-map (kbd "p") 'xah-run-wolfram-script-print-all)
+(define-key xah-wolfram-leader-map (kbd "<return>") 'xah-wolfram-smart-newline)
 
 
 
