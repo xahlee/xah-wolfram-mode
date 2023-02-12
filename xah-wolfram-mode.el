@@ -3,7 +3,7 @@
 ;; Copyright © 2021-2023 by Xah Lee
 
 ;; Author: Xah Lee ( http://xahlee.info/ )
-;; Version: 1.16.20230212120626
+;; Version: 2.0.2023-02-12
 ;; Created: 24 July 2021
 ;; Package-Requires: ((emacs "27"))
 ;; Keywords: languages, Wolfram Language, Mathematica
@@ -55,6 +55,26 @@
 
 
 ;;; Code:
+
+(defun xah-wolfram-get-bounds-of-block ()
+  "Return the boundary (START . END) of current block.
+Version: 2023-02-12"
+  (let ( $p1 $p2 ($blankRegex "\n[ \t]*\n"))
+    (save-excursion
+      (setq $p1 (if (re-search-backward $blankRegex nil 1)
+                    (goto-char (match-end 0))
+                  (point)))
+      (setq $p2 (if (re-search-forward $blankRegex nil 1)
+                    (match-beginning 0)
+                  (point))))
+    (cons $p1 $p2 )))
+
+(defun xah-wolfram-get-bounds-of-block-or-region ()
+  "If region is active, return its boundary, else same as `xah-get-bounds-of-block'.
+Version: 2023-02-12"
+  (if (region-active-p)
+      (cons (region-beginning) (region-end))
+    (xah-get-bounds-of-block)))
 
 (defun xah-wolfram-replace-regexp-pairs-region (Begin End Pairs &optional Fixedcase-p Literal-p Hilight-p)
   "Replace regex string find/replace Pairs in region.
@@ -2418,7 +2438,7 @@ Version: 2021-07-26"
 Version: 2021-08-01 2021-09-22"
   (interactive)
   (require 'xah-replace-pairs)
-  (let* (($bds (xah-get-bounds-of-thing-or-region 'block))
+  (let* (($bds (xah-wolfram-get-bounds-of-block-or-region))
          ($p1 (car $bds))
          ($p2 (cdr $bds)))
     (xah-wolfram-replace-regexp-pairs-region
@@ -2451,7 +2471,7 @@ Version: 2021-08-01 2021-09-22"
 Version: 2021-07-25 2021-09-22 2022-09-14 2022-09-21"
   (interactive)
   (require 'xah-replace-pairs)
-  (let* (($bds (xah-get-bounds-of-thing-or-region 'block))
+  (let* (($bds (xah-wolfram-get-bounds-of-block-or-region))
          ($p1 (car $bds))
          ($p2 (cdr $bds)))
     (xah-wolfram-replace-regexp-pairs-region
