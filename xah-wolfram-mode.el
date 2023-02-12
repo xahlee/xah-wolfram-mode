@@ -2628,6 +2628,8 @@ version 2017-01-27 2021-10-28 2022-04-07"
   (make-local-variable 'abbrev-expand-function)
   (setq abbrev-expand-function 'xah-wolfram-expand-abbrev)
 
+  (add-hook 'completion-at-point-functions #'xah-wolfram-complete-symbol nil 'local)
+
   (abbrev-mode 1)
 
   :group 'xah-wolfram-mode
