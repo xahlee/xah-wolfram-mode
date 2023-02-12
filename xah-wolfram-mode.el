@@ -3,7 +3,7 @@
 ;; Copyright © 2021-2023 by Xah Lee
 
 ;; Author: Xah Lee ( http://xahlee.info/ )
-;; Version: 2.0.2023-02-12
+;; Version: 2.0.20230212124926
 ;; Created: 24 July 2021
 ;; Package-Requires: ((emacs "27"))
 ;; Keywords: languages, Wolfram Language, Mathematica
@@ -1930,7 +1930,7 @@ Version: 2021-10-27"
 "SystemsModelLinearity" "SystemsModelMerge" "SystemsModelOrder"
 "SystemsModelParallelConnect" "SystemsModelSeriesConnect"
 "SystemsModelStateFeedbackConnect" "SystemsModelVectorRelativeOrders"
-"SystemStub" "SystemTest" "Tab" "TabFilling" "Table" "TableAlignments"
+"SystemStub" "SystemTest" "TabFilling" "Table" "TableAlignments"
 "TableDepth" "TableDirections" "TableForm" "TableHeadings"
 "TableSpacing" "TableView" "TableViewBox" "TableViewBoxAlignment"
 "TableViewBoxBackground" "TableViewBoxItemSize" "TableViewBoxOptions"
@@ -2531,17 +2531,21 @@ Version: 2021-07-25 2021-09-22 2022-09-14 2022-09-21"
 (defun xah-wolfram-complete-symbol ()
   "Perform keyword completion on current symbol.
 
-version 2017-01-27 2021-10-28 2022-04-07"
+version 2017-01-27 2021-10-28 2022-04-07 2023-02-12"
   (interactive)
-  (let* (($bds (bounds-of-thing-at-point 'symbol))
-         ($p1 (car $bds))
-         ($p2 (cdr $bds))
-         ($curSym
-          (if (or (not $p1) (not $p2) (equal $p1 $p2))
-              ""
-            (buffer-substring-no-properties $p1 $p2)))
-         $resultSym)
-    (when (not $curSym) (setq $curSym ""))
+  (let ( ($p0 (point)) $p1 $p2 $curSym $resultSym)
+    (save-excursion
+      (skip-chars-backward "$A-Za-z0-9")
+      (setq $p1 (point))
+      (goto-char $p0)
+      (skip-chars-forward "$A-Za-z0-9")
+      (setq $p2 (point)))
+    (setq
+     $curSym
+     (if (or (null $p1) (null $p2) (eq $p1 $p2))
+         ""
+       (buffer-substring-no-properties $p1 $p2)))
+    (when (null $curSym) (setq $curSym ""))
     (setq $resultSym (completing-read "" xah-wolfram-all-symbols nil nil $curSym))
     (delete-region $p1 $p2)
     (insert $resultSym "[  ]")
