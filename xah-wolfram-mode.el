@@ -3,7 +3,7 @@
 ;; Copyright © 2021-2023 by Xah Lee
 
 ;; Author: Xah Lee ( http://xahlee.info/ )
-;; Version: 1.15.20230212112503
+;; Version: 1.16.20230212120626
 ;; Created: 24 July 2021
 ;; Package-Requires: ((emacs "27"))
 ;; Keywords: languages, Wolfram Language, Mathematica
@@ -40,8 +40,8 @@
 ;; TAB e           xah-wolfram-complete-symbol
 ;; TAB f           xah-wolfram-format-pretty
 ;; TAB h           xah-wolfram-doc-lookup
-;; TAB p           xah-run-wolfram-script-print-all
-;; TAB r           xah-run-wolfram-script
+;; TAB p           xah-wolfram-run-script-print-all
+;; TAB r           xah-wolfram-run-script
 ;; TAB t           xah-wolfram-replace-special-char
 ;; TAB <return>    xah-wolfram-smart-newline
 
@@ -56,7 +56,33 @@
 
 ;;; Code:
 
-(defun xah-run-wolfram-script (&optional OptStr CurrentPrefixArg)
+(defun xah-wolfram-replace-regexp-pairs-region (Begin End Pairs &optional Fixedcase-p Literal-p Hilight-p)
+  "Replace regex string find/replace Pairs in region.
+
+Begin End are the region boundaries.
+
+Pairs is
+ [[regexStr1 replaceStr1] [regexStr2 replaceStr2] …]
+It can be list or vector, for the elements or the entire argument.
+
+The optional arguments Fixedcase-p and Literal-p is the same as in `replace-match'.
+If Hilight-p is true, highlight the changed region.
+
+Find strings case sensitivity depends on `case-fold-search'. You can set it locally, like this: (let ((case-fold-search nil)) …)
+Version: 2017-02-21 2021-08-14"
+  (save-excursion
+    (save-restriction
+      (narrow-to-region Begin End)
+      (mapc
+       (lambda ($x)
+         (goto-char (point-min))
+         (while (re-search-forward (elt $x 0) (point-max) t)
+           (replace-match (elt $x 1) Fixedcase-p Literal-p)
+           (when Hilight-p
+             (overlay-put (make-overlay (match-beginning 0) (match-end 0)) 'face 'highlight))))
+       Pairs))))
+
+(defun xah-wolfram-run-script (&optional OptStr CurrentPrefixArg)
   "Execute the current file with wolframscript.
 The current file should have extension wls wl m nb.
 
@@ -94,12 +120,12 @@ Version: 2021-10-27 2022-04-07"
     ;; (message "Runing 「%s」" $cmdStr)
     (shell-command $cmdStr "*wolframscript output*")))
 
-(defun xah-run-wolfram-script-print-all ()
+(defun xah-wolfram-run-script-print-all ()
   "Execute the current file with wolframscript with option -print all.
 If the file is modified or not saved, save it automatically before run.
 Version: 2021-10-27"
   (interactive)
-  (xah-run-wolfram-script "-print all"))
+  (xah-wolfram-run-script "-print all"))
 
 (defvar xah-wolfram-special-char nil "List of Wolfram Language symbols. Part of many.")
 
@@ -590,7 +616,7 @@ Version: 2021-10-27"
 "CurrentValue" "Curry" "CurryApplied" "CurvatureFlowFilter"
 "CurveClosed" "Cyan" "CycleGraph" "CycleIndexPolynomial" "Cycles"
 "CyclicGroup" "Cyclotomic" "Cylinder" "CylinderBox"
-"CylindricalDecomposition" "CylindricalDecompositionFunction" "C$" "D"
+"CylindricalDecomposition" "CylindricalDecompositionFunction"
 "DagumDistribution" "DamData" "DamerauLevenshteinDistance"
 "DampingFactor" "Darker" "Dashed" "Dashing" "DatabaseAggregate"
 "DatabaseAnnotate" "DatabaseComplement" "DatabaseComplementAll"
@@ -717,14 +743,14 @@ Version: 2021-10-27"
 "DownRightVectorBar" "Downsample" "DownTee" "DownTeeArrow"
 "DownValues" "DragAndDrop" "DrawEdges" "DrawFrontFaces"
 "DrawHighlighted" "Drop" "DropoutLayer" "DSolve" "DSolveValue" "Dt"
-"Dt$" "DualLinearProgramming" "DualPolyhedron" "DualSystemsModel"
+"DualLinearProgramming" "DualPolyhedron" "DualSystemsModel"
 "DumpGet" "DumpSave" "DuplicateFreeQ" "Duration" "Dynamic"
 "DynamicBox" "DynamicBoxOptions" "DynamicEvaluationTimeout"
 "DynamicGeoGraphics" "DynamicImage" "DynamicLocation" "DynamicModule"
 "DynamicModuleBox" "DynamicModuleBoxOptions" "DynamicModuleParent"
 "DynamicModuleValues" "DynamicName" "DynamicNamespace"
 "DynamicReference" "DynamicSetting" "DynamicUpdating" "DynamicWrapper"
-"DynamicWrapperBox" "DynamicWrapperBoxOptions" "D$"
+"DynamicWrapperBox" "DynamicWrapperBoxOptions"
 ))
 
 (defvar xah-wolfram-funs2 nil "List of Wolfram Language symbols. Part of many.")
@@ -803,7 +829,7 @@ Version: 2021-10-27"
 "ExternalStorageGet" "ExternalStorageObject" "ExternalStoragePut"
 "ExternalStorageUpload" "ExternalTypeSignature" "ExternalValue"
 "Extract" "ExtractArchive" "ExtractLayer" "ExtractPacletArchive"
-"ExtremeValueDistribution" "E$" "FaceAlign" "FaceForm" "FaceGrids"
+"ExtremeValueDistribution" "FaceAlign" "FaceForm" "FaceGrids"
 "FaceGridsStyle" "FaceRecognize" "FacialFeatures" "Factor"
 "FactorComplete" "Factorial" "Factorial2" "FactorialMoment"
 "FactorialMomentGeneratingFunction" "FactorialPower" "FactorInteger"
@@ -2048,7 +2074,7 @@ Version: 2021-10-27"
 "VideoTrim" "ViewAngle" "ViewCenter" "ViewMatrix" "ViewPoint"
 "ViewPointSelectorSettings" "ViewPort" "ViewProjection" "ViewRange"
 "ViewVector" "ViewVertical" "VirtualGroupData" "Visible" "VisibleCell"
-"vMax" "vMax$$" "VoiceStyleData" "VoigtDistribution" "VolcanoData"
+"VoiceStyleData" "VoigtDistribution" "VolcanoData"
 "Volume" "VonMisesDistribution" "VoronoiMesh" "WaitAll"
 "WaitAsynchronousTask" "WaitNext" "WaitUntil" "WakebyDistribution"
 "WalleniusHypergeometricDistribution" "WaringYuleDistribution"
@@ -2389,14 +2415,13 @@ Version: 2021-07-26"
 
 (defun xah-wolfram-format-compact ()
   "Format current block in compact style.
-todo.
 Version: 2021-08-01 2021-09-22"
   (interactive)
   (require 'xah-replace-pairs)
   (let* (($bds (xah-get-bounds-of-thing-or-region 'block))
          ($p1 (car $bds))
          ($p2 (cdr $bds)))
-    (xah-replace-regexp-pairs-region
+    (xah-wolfram-replace-regexp-pairs-region
      $p1 $p2
      [
       ["\\([A-Za-z0-9]\\) @" "\\1@"]
@@ -2423,14 +2448,13 @@ Version: 2021-08-01 2021-09-22"
 
 (defun xah-wolfram-format-pretty ()
   "Format current block in readable style.
-todo.
 Version: 2021-07-25 2021-09-22 2022-09-14 2022-09-21"
   (interactive)
   (require 'xah-replace-pairs)
   (let* (($bds (xah-get-bounds-of-thing-or-region 'block))
          ($p1 (car $bds))
          ($p2 (cdr $bds)))
-    (xah-replace-regexp-pairs-region
+    (xah-wolfram-replace-regexp-pairs-region
      $p1 $p2
      [
       ;; before comma
@@ -2473,7 +2497,7 @@ Version: 2021-07-25 2021-09-22 2022-09-14 2022-09-21"
 
       ["\n;" ";"]
       ] t)
-    (xah-replace-regexp-pairs-region
+    (xah-wolfram-replace-regexp-pairs-region
      $p1 $p2
      [
       ;; [" := " ":="]
@@ -2565,28 +2589,23 @@ version 2017-01-27 2021-10-28 2022-04-07"
  'xah-wolfram-var-name
  '((t :foreground "#2e8b57" :weight bold )))
 
-(defvar xah-wolfram-font-lock-keywords nil "todo. version 2021-09-22")
+(defvar xah-wolfram-font-lock-keywords nil "Value for `font-lock-defaults'")
 
 (setq
  xah-wolfram-font-lock-keywords
- (let ()
-   `( ;
-     (,(regexp-opt xah-wolfram-funs1 'symbols) . font-lock-function-name-face)
-     (,(regexp-opt xah-wolfram-funs2 'symbols) . font-lock-function-name-face)
-     (,(regexp-opt xah-wolfram-funs2-5 'symbols) . font-lock-function-name-face)
-     (,(regexp-opt xah-wolfram-funs3 'symbols) . font-lock-function-name-face)
-     (,(regexp-opt xah-wolfram-funs3-5 'symbols) . font-lock-function-name-face)
-     (,(regexp-opt xah-wolfram-funs4 'symbols) . font-lock-function-name-face)
-     (,(regexp-opt xah-wolfram-dollar-names 'symbols) . font-lock-builtin-face)
+ `((,(regexp-opt xah-wolfram-funs1 'symbols) . font-lock-function-name-face)
+   (,(regexp-opt xah-wolfram-funs2 'symbols) . font-lock-function-name-face)
+   (,(regexp-opt xah-wolfram-funs2-5 'symbols) . font-lock-function-name-face)
+   (,(regexp-opt xah-wolfram-funs3 'symbols) . font-lock-function-name-face)
+   (,(regexp-opt xah-wolfram-funs3-5 'symbols) . font-lock-function-name-face)
+   (,(regexp-opt xah-wolfram-funs4 'symbols) . font-lock-function-name-face)
+   (,(regexp-opt xah-wolfram-dollar-names 'symbols) . font-lock-builtin-face)
 
-     ("\\b[a-z]+[0-9]*_+" . 'xah-wolfram-var-name)
-     ("#[0-9]" . 'xah-wolfram-var-name)
-     ("#+" . 'xah-wolfram-var-name)
-     ("\\b[a-z][A-Za-z0-9]*" . font-lock-variable-name-face)
-     ("\\b[A-Z][A-Za-z0-9]*" . font-lock-warning-face)
-
-     ;;
-)))
+   ("\\b[a-z]+[0-9]*_+" . 'xah-wolfram-var-name)
+   ("#[0-9]" . 'xah-wolfram-var-name)
+   ("#+" . 'xah-wolfram-var-name)
+   ("\\b[a-z][A-Za-z0-9]*" . font-lock-variable-name-face)
+   ("\\b[A-Z][A-Za-z0-9]*" . font-lock-warning-face)))
 
 
 ;; keybinding
@@ -2608,8 +2627,8 @@ version 2017-01-27 2021-10-28 2022-04-07"
   (define-key xah-wolfram-leader-map (kbd "e") 'xah-wolfram-complete-symbol)
   (define-key xah-wolfram-leader-map (kbd "h") 'xah-wolfram-doc-lookup)
   (define-key xah-wolfram-leader-map (kbd "c") 'xah-wolfram-format-compact)
-  (define-key xah-wolfram-leader-map (kbd "r") 'xah-run-wolfram-script)
-  (define-key xah-wolfram-leader-map (kbd "p") 'xah-run-wolfram-script-print-all)
+  (define-key xah-wolfram-leader-map (kbd "r") 'xah-wolfram-run-script)
+  (define-key xah-wolfram-leader-map (kbd "p") 'xah-wolfram-run-script-print-all)
 
   (define-key xah-wolfram-leader-map (kbd "<return>") 'xah-wolfram-smart-newline))
 
@@ -2628,7 +2647,7 @@ version 2017-01-27 2021-10-28 2022-04-07"
   (make-local-variable 'abbrev-expand-function)
   (setq abbrev-expand-function 'xah-wolfram-expand-abbrev)
 
-  (add-hook 'completion-at-point-functions #'xah-wolfram-complete-symbol nil 'local)
+  ;; (add-hook 'completion-at-point-functions #'xah-wolfram-complete-symbol nil 'local)
 
   (abbrev-mode 1)
 
