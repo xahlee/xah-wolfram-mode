@@ -1,9 +1,9 @@
 ;;; xah-wolfram-mode.el --- Major mode for editing Wolfram Language. -*- coding: utf-8; lexical-binding: t; -*-
 
-;; Copyright © 2021-2022 by Xah Lee
+;; Copyright © 2021-2023 by Xah Lee
 
 ;; Author: Xah Lee ( http://xahlee.info/ )
-;; Version: 1.14.20230211120535
+;; Version: 1.15.20230212112503
 ;; Created: 24 July 2021
 ;; Package-Requires: ((emacs "27"))
 ;; Keywords: languages, Wolfram Language, Mathematica
