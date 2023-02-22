@@ -3,7 +3,7 @@
 ;; Copyright © 2021-2023 by Xah Lee
 
 ;; Author: Xah Lee ( http://xahlee.info/ )
-;; Version: 2.0.20230212124926
+;; Version: 2.0.20230222132530
 ;; Created: 24 July 2021
 ;; Package-Requires: ((emacs "27"))
 ;; Keywords: languages, Wolfram Language, Mathematica
@@ -1010,7 +1010,7 @@ Version: 2021-10-27"
 "GraphDistance" "GraphDistanceMatrix" "GraphElementData"
 "GraphEmbedding" "GraphHighlight" "GraphHighlightStyle" "GraphHub"
 "Graphics" "Graphics3D" "Graphics3DBox" "Graphics3DBoxOptions"
-"GraphicsArray" "GraphicsBaseline" "GraphicsBox" "GraphicsBoxOptions"
+"GraphicsBaseline" "GraphicsBox" "GraphicsBoxOptions"
 "GraphicsColor" "GraphicsColumn" "GraphicsComplex"
 "GraphicsComplex3DBox" "GraphicsComplex3DBoxOptions"
 "GraphicsComplexBox" "GraphicsComplexBoxOptions" "GraphicsContents"
