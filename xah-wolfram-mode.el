@@ -3,7 +3,7 @@
 ;; Copyright © 2021-2023 by Xah Lee
 
 ;; Author: Xah Lee ( http://xahlee.info/ )
-;; Version: 2.0.20230222132530
+;; Version: 2.0.20230618145128
 ;; Created: 24 July 2021
 ;; Package-Requires: ((emacs "27"))
 ;; Keywords: languages, Wolfram Language, Mathematica
@@ -59,15 +59,15 @@
 (defun xah-wolfram-get-bounds-of-block ()
   "Return the boundary (START . END) of current block.
 Version: 2023-02-12"
-  (let ( $p1 $p2 ($blankRegex "\n[ \t]*\n"))
+  (let ( xp1 xp2 (xblankRegex "\n[ \t]*\n"))
     (save-excursion
-      (setq $p1 (if (re-search-backward $blankRegex nil 1)
+      (setq xp1 (if (re-search-backward xblankRegex nil 1)
                     (goto-char (match-end 0))
                   (point)))
-      (setq $p2 (if (re-search-forward $blankRegex nil 1)
+      (setq xp2 (if (re-search-forward xblankRegex nil 1)
                     (match-beginning 0)
                   (point))))
-    (cons $p1 $p2 )))
+    (cons xp1 xp2 )))
 
 (defun xah-wolfram-get-bounds-of-block-or-region ()
   "If region is active, return its boundary, else same as `xah-get-bounds-of-block'.
@@ -94,10 +94,10 @@ Version: 2017-02-21 2021-08-14"
     (save-restriction
       (narrow-to-region Begin End)
       (mapc
-       (lambda ($x)
+       (lambda (xx)
          (goto-char (point-min))
-         (while (re-search-forward (elt $x 0) (point-max) t)
-           (replace-match (elt $x 1) Fixedcase-p Literal-p)
+         (while (re-search-forward (elt xx 0) (point-max) t)
+           (replace-match (elt xx 1) Fixedcase-p Literal-p)
            (when Hilight-p
              (overlay-put (make-overlay (match-beginning 0) (match-end 0)) 'face 'highlight))))
        Pairs))))
@@ -111,8 +111,8 @@ When `universal-argument' is called first, prompt user to give wolframscript com
 If the file is modified or not saved, save it automatically before run.
 Version: 2021-10-27 2022-04-07"
   (interactive)
-  (let ($userSay $cmdStr $optionsStr)
-    (setq $userSay
+  (let (xuserSay xcmdStr xoptionsStr)
+    (setq xuserSay
           (if OptStr
               OptStr
             (if (or CurrentPrefixArg current-prefix-arg)
@@ -130,15 +130,15 @@ Version: 2021-10-27 2022-04-07"
               )))
     (if buffer-file-name nil (save-buffer))
     (if (buffer-modified-p) (save-buffer) nil )
-    (setq $optionsStr
+    (setq xoptionsStr
           (cond
-           ((string-equal $userSay "None") "")
-           ((string-equal $userSay "Ask")
+           ((string-equal xuserSay "None") "")
+           ((string-equal xuserSay "Ask")
             (read-string "extra options:" ""))
-           (t $userSay)))
-    (setq $cmdStr (format  "wolframscript -file %s %s" (shell-quote-argument buffer-file-name)  $optionsStr))
-    ;; (message "Runing 「%s」" $cmdStr)
-    (shell-command $cmdStr "*wolframscript output*")))
+           (t xuserSay)))
+    (setq xcmdStr (format  "wolframscript -file %s %s" (shell-quote-argument buffer-file-name)  xoptionsStr))
+    ;; (message "Runing 「%s」" xcmdStr)
+    (shell-command xcmdStr "*wolframscript output*")))
 
 (defun xah-wolfram-run-script-print-all ()
   "Execute the current file with wolframscript with option -print all.
@@ -2255,12 +2255,12 @@ Version: 2021-10-27"
   "Look up the symbol under cursor in Wolfram doc site in web browser.
 Version: 2021-07-25 2021-09-15 2021-09-20"
   (interactive)
-  (let* (($word
+  (let* ((xword
           (if (region-active-p)
               (buffer-substring-no-properties (region-beginning) (region-end))
             (upcase-initials (current-word))))
-         ($url (format "https://reference.wolfram.com/language/ref/%s.html" $word)))
-    (browse-url $url)))
+         (xurl (format "https://reference.wolfram.com/language/ref/%s.html" xword)))
+    (browse-url xurl)))
 
 (defun xah-wolfram-smart-newline ()
   "Insert a semicolon and a newline.
@@ -2275,35 +2275,35 @@ Version: 2021-08-06"
   "Return t if not in string or comment. Else nil.
 This is for abbrev table property `:enable-function'.
 Version: 2021-07-24"
-  (let (($syntaxState (syntax-ppss)))
-    (not (or (nth 3 $syntaxState) (nth 4 $syntaxState)))))
+  (let ((xsyntaxState (syntax-ppss)))
+    (not (or (nth 3 xsyntaxState) (nth 4 xsyntaxState)))))
 
 (defun xah-wolfram-expand-abbrev ()
-  "Expand the symbol before cursor,
-if cursor is not in string or comment.
+  "Function for value of variable `abbrev-expand-function'.
+Expand the symbol before cursor, if cursor is not in string or comment.
 Returns the abbrev symbol if there's a expansion, else nil.
 Version: 2021-07-24"
   (interactive)
   (when (xah-wolfram-abbrev-enable-function) ; abbrev property :enable-function doesn't seem to work, so check here instead
-    (let ( $p1 $p2 $abrStr $abrSymbol )
+    (let ( xp1 xp2 xabrStr xabrSymbol )
       ;; (save-excursion
       ;;   (forward-symbol -1)
-      ;;   (setq $p1 (point))
-      ;;   (goto-char $p0)
-      ;;   (setq $p2 $p0))
+      ;;   (setq xp1 (point))
+      ;;   (goto-char xp0)
+      ;;   (setq xp2 xp0))
       (save-excursion
         ;; 2017-01-16 note: we select the whole symbol to solve a problem. problem is: if “aa”  is a abbrev, and “▮bbcc” is existing word with cursor at beginning, and user wants to type aa-bbcc. Normally, aa immediately expands. This prevent people editing bbcc to become aa-bbcc. This happens for example in elisp “search-forward” to get “re-search-forward”. The downside of this is that, people cannot type a abbrev when in middle of a word.
         (forward-symbol -1)
-        (setq $p1 (point))
+        (setq xp1 (point))
         (forward-symbol 1)
-        (setq $p2 (point)))
-      (setq $abrStr (buffer-substring-no-properties $p1 $p2))
-      (setq $abrSymbol (abbrev-symbol $abrStr))
-      (if $abrSymbol
+        (setq xp2 (point)))
+      (setq xabrStr (buffer-substring-no-properties xp1 xp2))
+      (setq xabrSymbol (abbrev-symbol xabrStr))
+      (if xabrSymbol
           (progn
-            (abbrev-insert $abrSymbol $abrStr $p1 $p2 )
-            (xah-wolfram--abbrev-position-cursor $p1)
-            $abrSymbol)
+            (abbrev-insert xabrSymbol xabrStr xp1 xp2 )
+            (xah-wolfram--abbrev-position-cursor xp1)
+            xabrSymbol)
         nil))))
 
 (defun xah-wolfram--abbrev-position-cursor (&optional @pos)
@@ -2311,9 +2311,9 @@ Version: 2021-07-24"
 Return true if found, else false.
 Version: 2016-10-24"
   (interactive)
-  (let (($foundQ (search-backward "▮" (if @pos @pos (max (point-min) (- (point) 100))) t )))
-    (when $foundQ (delete-char 1))
-    $foundQ
+  (let ((xfoundQ (search-backward "▮" (if @pos @pos (max (point-min) (- (point) 100))) t )))
+    (when xfoundQ (delete-char 1))
+    xfoundQ
     ))
 
 (defun xah-wolfram--ahf ()
@@ -2409,8 +2409,8 @@ If char before point is letters and char after point is whitespace or punctuatio
   ;; space▮char → do indent
   ;; char▮space → do completion
   ;; char ▮char → do indent
-  (let (($syntaxState (syntax-ppss)))
-    (if (or (nth 3 $syntaxState) (nth 4 $syntaxState))
+  (let ((xsyntaxState (syntax-ppss)))
+    (if (or (nth 3 xsyntaxState) (nth 4 xsyntaxState))
         (progn
           (xah-wolfram-format-pretty))
       (progn (if
@@ -2425,11 +2425,11 @@ Root sexp group is the outmost sexp unit.
 Version: 2021-07-26"
   (interactive)
   (save-excursion
-    (let ($p1 $p2)
-      (setq $p1 (if (search-backward "\n\n" nil t) (+ (point) 2) (point-min)))
-      (setq $p2 (if (search-forward "\n\n" nil t) (- (point) 2) (point-max)))
+    (let (xp1 xp2)
+      (setq xp1 (if (search-backward "\n\n" nil t) (+ (point) 2) (point-min)))
+      (setq xp2 (if (search-forward "\n\n" nil t) (- (point) 2) (point-max)))
       (save-restriction
-        (narrow-to-region $p1 $p2)
+        (narrow-to-region xp1 xp2)
         (let ((case-fold-search nil))
           (goto-char (point-min)) (while (search-forward "\\[Pi]" nil t) (replace-match "Pi")))))))
 
@@ -2438,16 +2438,16 @@ Version: 2021-07-26"
 Version: 2021-08-01 2021-09-22"
   (interactive)
   (require 'xah-replace-pairs)
-  (let* (($bds (xah-wolfram-get-bounds-of-block-or-region))
-         ($p1 (car $bds))
-         ($p2 (cdr $bds)))
+  (let* ((xbds (xah-wolfram-get-bounds-of-block-or-region))
+         (xp1 (car xbds))
+         (xp2 (cdr xbds)))
     (xah-wolfram-replace-regexp-pairs-region
-     $p1 $p2
+     xp1 xp2
      [
       ["\\([A-Za-z0-9]\\) @" "\\1@"]
       ] t nil t)
     (xah-replace-pairs-region-recursive
-     $p1 $p2
+     xp1 xp2
      [
       ["  " " "]
       [" [" "["]
@@ -2471,11 +2471,11 @@ Version: 2021-08-01 2021-09-22"
 Version: 2021-07-25 2021-09-22 2022-09-14 2022-09-21"
   (interactive)
   (require 'xah-replace-pairs)
-  (let* (($bds (xah-wolfram-get-bounds-of-block-or-region))
-         ($p1 (car $bds))
-         ($p2 (cdr $bds)))
+  (let* ((xbds (xah-wolfram-get-bounds-of-block-or-region))
+         (xp1 (car xbds))
+         (xp2 (cdr xbds)))
     (xah-wolfram-replace-regexp-pairs-region
-     $p1 $p2
+     xp1 xp2
      [
       ;; before comma
       ["\\([]}A-Za-z0-9]\\) ," "\\1,"]
@@ -2518,7 +2518,7 @@ Version: 2021-07-25 2021-09-22 2022-09-14 2022-09-21"
       ["\n;" ";"]
       ] t)
     (xah-wolfram-replace-regexp-pairs-region
-     $p1 $p2
+     xp1 xp2
      [
       ;; [" := " ":="]
       ["]:>" "] :>"]
@@ -2533,22 +2533,22 @@ Version: 2021-07-25 2021-09-22 2022-09-14 2022-09-21"
 
 version 2017-01-27 2021-10-28 2022-04-07 2023-02-12"
   (interactive)
-  (let ( ($p0 (point)) $p1 $p2 $curSym $resultSym)
+  (let ( (xp0 (point)) xp1 xp2 xcurSym xresultSym)
     (save-excursion
       (skip-chars-backward "$A-Za-z0-9")
-      (setq $p1 (point))
-      (goto-char $p0)
+      (setq xp1 (point))
+      (goto-char xp0)
       (skip-chars-forward "$A-Za-z0-9")
-      (setq $p2 (point)))
+      (setq xp2 (point)))
     (setq
-     $curSym
-     (if (or (null $p1) (null $p2) (eq $p1 $p2))
+     xcurSym
+     (if (or (null xp1) (null xp2) (eq xp1 xp2))
          ""
-       (buffer-substring-no-properties $p1 $p2)))
-    (when (null $curSym) (setq $curSym ""))
-    (setq $resultSym (completing-read "" xah-wolfram-all-symbols nil nil $curSym))
-    (delete-region $p1 $p2)
-    (insert $resultSym "[  ]")
+       (buffer-substring-no-properties xp1 xp2)))
+    (when (null xcurSym) (setq xcurSym ""))
+    (setq xresultSym (completing-read "" xah-wolfram-all-symbols nil nil xcurSym))
+    (delete-region xp1 xp2)
+    (insert xresultSym "[  ]")
     (backward-char 2)))
 
 
@@ -2557,49 +2557,49 @@ version 2017-01-27 2021-10-28 2022-04-07 2023-02-12"
 
 (setq
  xah-wolfram-mode-syntax-table
- (let ((synTable (make-syntax-table )))
+ (let ((xsynTable (make-syntax-table )))
 
-   ;; (modify-syntax-entry ?\( "()" synTable)
-   ;; (modify-syntax-entry ?\) ")(" synTable)
-   ;; (modify-syntax-entry ?\[ "(]" synTable)
-   ;; (modify-syntax-entry ?\] ")[" synTable)
-   ;; (modify-syntax-entry ?\{ "(}" synTable)
-   ;; (modify-syntax-entry ?\} "){" synTable)
+   ;; (modify-syntax-entry ?\( "()" xsynTable)
+   ;; (modify-syntax-entry ?\) ")(" xsynTable)
+   ;; (modify-syntax-entry ?\[ "(]" xsynTable)
+   ;; (modify-syntax-entry ?\] ")[" xsynTable)
+   ;; (modify-syntax-entry ?\{ "(}" xsynTable)
+   ;; (modify-syntax-entry ?\} "){" xsynTable)
 
    ;; comment
-   (modify-syntax-entry ?\( "()1n" synTable)
-   (modify-syntax-entry ?\) ")(4n" synTable)
-   (modify-syntax-entry ?* ". 23n" synTable)
+   (modify-syntax-entry ?\( "()1n" xsynTable)
+   (modify-syntax-entry ?\) ")(4n" xsynTable)
+   (modify-syntax-entry ?* ". 23n" xsynTable)
 
    ;; symbol
-   (modify-syntax-entry ?$ "_" synTable)
+   (modify-syntax-entry ?$ "_" xsynTable)
 
    ;; punctuation
-   (modify-syntax-entry ?! "." synTable)
-   (modify-syntax-entry ?# "." synTable)
-   (modify-syntax-entry ?% "." synTable)
-   (modify-syntax-entry ?& "." synTable)
-   (modify-syntax-entry ?' "." synTable)
-   (modify-syntax-entry ?+ "." synTable)
-   (modify-syntax-entry ?, "." synTable)
-   (modify-syntax-entry ?- "." synTable)
-   (modify-syntax-entry ?. "." synTable)
-   (modify-syntax-entry ?/ "." synTable)
-   (modify-syntax-entry ?: "." synTable)
-   (modify-syntax-entry ?\; "." synTable)
-   (modify-syntax-entry ?< "." synTable)
-   (modify-syntax-entry ?= "." synTable)
-   (modify-syntax-entry ?> "." synTable)
-   (modify-syntax-entry ?? "." synTable)
-   (modify-syntax-entry ?@ "." synTable)
-   (modify-syntax-entry ?\ "." synTable)
-   (modify-syntax-entry ?^ "." synTable)
-   (modify-syntax-entry ?_ "." synTable)
-   (modify-syntax-entry ?` "." synTable)
-   (modify-syntax-entry ?| "." synTable)
-   (modify-syntax-entry ?~ "." synTable)
+   (modify-syntax-entry ?! "." xsynTable)
+   (modify-syntax-entry ?# "." xsynTable)
+   (modify-syntax-entry ?% "." xsynTable)
+   (modify-syntax-entry ?& "." xsynTable)
+   (modify-syntax-entry ?' "." xsynTable)
+   (modify-syntax-entry ?+ "." xsynTable)
+   (modify-syntax-entry ?, "." xsynTable)
+   (modify-syntax-entry ?- "." xsynTable)
+   (modify-syntax-entry ?. "." xsynTable)
+   (modify-syntax-entry ?/ "." xsynTable)
+   (modify-syntax-entry ?: "." xsynTable)
+   (modify-syntax-entry ?\; "." xsynTable)
+   (modify-syntax-entry ?< "." xsynTable)
+   (modify-syntax-entry ?= "." xsynTable)
+   (modify-syntax-entry ?> "." xsynTable)
+   (modify-syntax-entry ?? "." xsynTable)
+   (modify-syntax-entry ?@ "." xsynTable)
+   (modify-syntax-entry ?\ "." xsynTable)
+   (modify-syntax-entry ?^ "." xsynTable)
+   (modify-syntax-entry ?_ "." xsynTable)
+   (modify-syntax-entry ?` "." xsynTable)
+   (modify-syntax-entry ?| "." xsynTable)
+   (modify-syntax-entry ?~ "." xsynTable)
 
-   synTable))
+   xsynTable))
 
 
 ;; syntax coloring related
