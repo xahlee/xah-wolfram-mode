@@ -3,7 +3,7 @@
 ;; Copyright © 2021-2023 by Xah Lee
 
 ;; Author: Xah Lee ( http://xahlee.info/ )
-;; Version: 2.0.20230618145128
+;; Version: 2.1.20230731162931
 ;; Created: 24 July 2021
 ;; Package-Requires: ((emacs "27"))
 ;; Keywords: languages, Wolfram Language, Mathematica
@@ -2401,7 +2401,8 @@ Version: 2016-10-24"
 (defun xah-wolfram-complete-or-indent ()
   "Do keyword completion or indent/prettify-format.
 
-If char before point is letters and char after point is whitespace or punctuation, then do completion, except when in string or comment. In these cases, do `xah-wolfram-format-pretty'."
+If char before point is letters and char after point is whitespace or punctuation, then do completion, except when in string or comment. In these cases, do `xah-wolfram-format-pretty'.
+Version: 2023-07-22"
   (interactive)
   ;; consider the char to the left or right of cursor. Each side is either empty or char.
   ;; there are 4 cases:
@@ -2414,8 +2415,9 @@ If char before point is letters and char after point is whitespace or punctuatio
         (progn
           (xah-wolfram-format-pretty))
       (progn (if
-                 (and (looking-back "[-_a-zA-Z]" 1)
-                      (or (eobp) (looking-at "[\n[:blank:][:punct:]]")))
+                 (and
+                  (prog2 (backward-char) (looking-at "[a-zA-Z]") (forward-char))
+                  (or (eobp) (looking-at "[\n[:blank:][:punct:]]")))
                  (xah-wolfram-complete-symbol)
                (xah-wolfram-format-pretty))))))
 
@@ -2435,9 +2437,8 @@ Version: 2021-07-26"
 
 (defun xah-wolfram-format-compact ()
   "Format current block in compact style.
-Version: 2021-08-01 2021-09-22"
+Version: 2021-08-01 2021-09-22 2023-07-31"
   (interactive)
-  (require 'xah-replace-pairs)
   (let* ((xbds (xah-wolfram-get-bounds-of-block-or-region))
          (xp1 (car xbds))
          (xp2 (cdr xbds)))
@@ -2446,7 +2447,7 @@ Version: 2021-08-01 2021-09-22"
      [
       ["\\([A-Za-z0-9]\\) @" "\\1@"]
       ] t nil t)
-    (xah-replace-pairs-region-recursive
+    (xah-wolfram-replace-regexp-pairs-region
      xp1 xp2
      [
       ["  " " "]
@@ -2468,9 +2469,8 @@ Version: 2021-08-01 2021-09-22"
 
 (defun xah-wolfram-format-pretty ()
   "Format current block in readable style.
-Version: 2021-07-25 2021-09-22 2022-09-14 2022-09-21"
+Version: 2021-07-25 2021-09-22 2022-09-14 2022-09-21 2023-07-31"
   (interactive)
-  (require 'xah-replace-pairs)
   (let* ((xbds (xah-wolfram-get-bounds-of-block-or-region))
          (xp1 (car xbds))
          (xp2 (cdr xbds)))
