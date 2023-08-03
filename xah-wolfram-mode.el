@@ -2399,27 +2399,24 @@ Version: 2016-10-24"
 ;; indent/reformat related
 
 (defun xah-wolfram-complete-or-indent ()
-  "Do keyword completion or indent/prettify-format.
+  "Do keyword completion or pretty format code.
+If cursor is in string or comment, do prettify.
+If char before cursor is a word, do completion, else do prettify.
+Prettify is done by `xah-wolfram-format-pretty'.
 
-If char before point is letters and char after point is whitespace or punctuation, then do completion, except when in string or comment. In these cases, do `xah-wolfram-format-pretty'.
-Version: 2023-07-22"
+Version: 2023-07-22 2023-08-02"
   (interactive)
-  ;; consider the char to the left or right of cursor. Each side is either empty or char.
-  ;; there are 4 cases:
-  ;; space▮space → do indent
-  ;; space▮char → do indent
-  ;; char▮space → do completion
-  ;; char ▮char → do indent
   (let ((xsyntaxState (syntax-ppss)))
-    (if (or (nth 3 xsyntaxState) (nth 4 xsyntaxState))
-        (progn
-          (xah-wolfram-format-pretty))
-      (progn (if
-                 (and
-                  (prog2 (backward-char) (looking-at "[a-zA-Z]") (forward-char))
-                  (or (eobp) (looking-at "[\n[:blank:][:punct:]]")))
-                 (xah-wolfram-complete-symbol)
-               (xah-wolfram-format-pretty))))))
+    (cond
+     ((or (nth 3 xsyntaxState) (nth 4 xsyntaxState))
+      (xah-wolfram-format-pretty))
+     ((eq (point-min) (point))
+      (xah-wolfram-format-pretty))
+     ((and
+       (prog2 (backward-char) (looking-at "[a-zA-Z]") (forward-char))
+       (or (eobp) (looking-at "[\n[:blank:][:punct:]]")))
+      (xah-wolfram-complete-symbol))
+     (t (xah-wolfram-format-pretty)))))
 
 (defun xah-wolfram-replace-special-char ()
   "Prettify format current root sexp group.
