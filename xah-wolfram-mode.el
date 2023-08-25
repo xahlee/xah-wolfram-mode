@@ -3,8 +3,8 @@
 ;; Copyright © 2021-2023 by Xah Lee
 
 ;; Author: Xah Lee ( http://xahlee.info/ )
-;; Version: 2.1.20230731162931
-;; Created: 24 July 2021
+;; Version: 2.1.20230825164059
+;; Created: 2021-07-24
 ;; Package-Requires: ((emacs "27"))
 ;; Keywords: languages, Wolfram Language, Mathematica
 ;; Homepage: http://xahlee.info/emacs/misc/xah-wolfram-mode.html
@@ -53,7 +53,7 @@
 ;; you can change it by put this in your emacs init, before loading the mode
 ;; (setq xah-major-mode-leader-key (kbd "<f6>"))
 
-
+;; HHHH---------------------------------------------------
 ;;; Code:
 
 (defun xah-wolfram-get-bounds-of-block ()
@@ -109,7 +109,7 @@ The current file should have extension wls wl m nb.
 When `universal-argument' is called first, prompt user to give wolframscript command line options. (“-file name” is always used.)
 
 If the file is modified or not saved, save it automatically before run.
-Version: 2021-10-27 2022-04-07"
+Version: 2021-10-27 2022-04-07 2023-08-25"
   (interactive)
   (let (xuserSay xcmdStr xoptionsStr)
     (setq xuserSay
@@ -124,7 +124,7 @@ Version: 2021-10-27 2022-04-07"
                     "2 → -print all"
                     "3 → Ask"
                     "4 → None"
-                    ))
+                    ) nil t)
                  4)
               ""
               )))
@@ -2249,7 +2249,7 @@ Version: 2021-10-27"
        xah-wolfram-dollar-names
        ))
 
-
+;; HHHH---------------------------------------------------
 
 (defun xah-wolfram-doc-lookup ()
   "Look up the symbol under cursor in Wolfram doc site in web browser.
@@ -2268,7 +2268,7 @@ Version: 2021-08-06"
   (interactive)
   (insert ";\n"))
 
-
+;; HHHH---------------------------------------------------
 ;; abbrev
 
 (defun xah-wolfram-abbrev-enable-function ()
@@ -2297,8 +2297,8 @@ Version: 2021-07-24"
         (setq xp1 (point))
         (forward-symbol 1)
         (setq xp2 (point)))
-      (setq xabrStr (buffer-substring-no-properties xp1 xp2))
-      (setq xabrSymbol (abbrev-symbol xabrStr))
+      (setq xabrStr (buffer-substring-no-properties xp1 xp2)
+            xabrSymbol (abbrev-symbol xabrStr))
       (if xabrSymbol
           (progn
             (abbrev-insert xabrSymbol xabrStr xp1 xp2 )
@@ -2306,24 +2306,25 @@ Version: 2021-07-24"
             xabrSymbol)
         nil))))
 
-(defun xah-wolfram--abbrev-position-cursor (&optional @pos)
-  "Move cursor back to ▮ if exist, else put at end.
-Return true if found, else false.
-Version: 2016-10-24"
+(defun xah-wolfram--abbrev-position-cursor (&optional Pos)
+  "Move cursor back to ▮ if exist.
+Pos is a buffer position limit of search backward. If nil, default to point minus 100.
+Return point if found, else nil.
+Version: 2016-10-24 2023-08-20"
   (interactive)
-  (let ((xfoundQ (search-backward "▮" (if @pos @pos (max (point-min) (- (point) 100))) t )))
+  (let ((xfoundQ (search-backward "▮" (if Pos Pos (max (point-min) (- (point) 100))) t )))
     (when xfoundQ (delete-char 1))
     xfoundQ
     ))
 
-(defun xah-wolfram--ahf ()
+(defun xah-wolfram--abhook ()
   "Abbrev hook function, used for `define-abbrev'.
  Our use is to prevent inserting the char that triggered expansion. Experimental.
  the “ahf” stand for abbrev hook function.
 Version: 2016-10-24"
   t)
 
-(put 'xah-wolfram--ahf 'no-self-insert t)
+(put 'xah-wolfram--abhook 'no-self-insert t)
 
 (defvar xah-wolfram-mode-abbrev-table nil "abbrev table" )
 
@@ -2334,68 +2335,66 @@ Version: 2016-10-24"
 
     ;;
 
-    ("cos" "Cos" xah-wolfram--ahf)
-    ("deg" "°" xah-wolfram--ahf)
-    ("eq" "== " xah-wolfram--ahf)
-    ("eqq" "=== " xah-wolfram--ahf)
-    ("fn" "((#▮) &)" xah-wolfram--ahf)
-    ("pt" " //Print" xah-wolfram--ahf)
-    ("ra" "-> ▮" xah-wolfram--ahf)
-    ("set" "= " xah-wolfram--ahf)
+    ("cos" "Cos" xah-wolfram--abhook)
+    ("deg" "°" xah-wolfram--abhook)
+    ("eq" "== " xah-wolfram--abhook)
+    ("eqq" "=== " xah-wolfram--abhook)
+    ("fn" "((#▮) &)" xah-wolfram--abhook)
+    ("pt" " //Print" xah-wolfram--abhook)
+    ("ra" "-> ▮" xah-wolfram--abhook)
+    ("set" "= " xah-wolfram--abhook)
 
     ;;
 
-    ("false" "False" xah-wolfram--ahf)
-    ("ff" "FullForm" xah-wolfram--ahf)
-    ("fun" "Function" xah-wolfram--ahf)
-    ("g3d" "Graphics3D" xah-wolfram--ahf)
-    ("gc" "GraphicsComplex[▮,]" xah-wolfram--ahf)
-    ("gra" "Graphics" xah-wolfram--ahf)
-    ("if" "If" xah-wolfram--ahf)
-    ("map" "Map" xah-wolfram--ahf)
-    ("md" "Module" xah-wolfram--ahf)
-    ("module" "Module" xah-wolfram--ahf)
-    ("pi" "Pi" xah-wolfram--ahf)
-    ("pp3" "ParametricPlot3D" xah-wolfram--ahf)
-    ("pp3d" "ParametricPlot3D"  xah-wolfram--ahf)
-    ("pr" "PlotRange" xah-wolfram--ahf)
-    ("range" "Range" xah-wolfram--ahf)
-    ("sin" "Sin" xah-wolfram--ahf)
-    ("sl" "StringLength" xah-wolfram--ahf)
-    ("table" "Table" xah-wolfram--ahf)
-    ("tan" "Tan" xah-wolfram--ahf)
-    ("true" "True" xah-wolfram--ahf)
-    ("with" "With" xah-wolfram--ahf)
+    ("false" "False" xah-wolfram--abhook)
+    ("ff" "FullForm" xah-wolfram--abhook)
+    ("fun" "Function" xah-wolfram--abhook)
+    ("g3d" "Graphics3D" xah-wolfram--abhook)
+    ("gc" "GraphicsComplex[▮,]" xah-wolfram--abhook)
+    ("gra" "Graphics" xah-wolfram--abhook)
+    ("if" "If" xah-wolfram--abhook)
+    ("map" "Map" xah-wolfram--abhook)
+    ("md" "Module" xah-wolfram--abhook)
+    ("module" "Module" xah-wolfram--abhook)
+    ("pi" "Pi" xah-wolfram--abhook)
+    ("pp3" "ParametricPlot3D" xah-wolfram--abhook)
+    ("pp3d" "ParametricPlot3D"  xah-wolfram--abhook)
+    ("pr" "PlotRange" xah-wolfram--abhook)
+    ("range" "Range" xah-wolfram--abhook)
+    ("sin" "Sin" xah-wolfram--abhook)
+    ("sl" "StringLength" xah-wolfram--abhook)
+    ("table" "Table" xah-wolfram--abhook)
+    ("tan" "Tan" xah-wolfram--abhook)
+    ("true" "True" xah-wolfram--abhook)
+    ("with" "With" xah-wolfram--abhook)
 
     ;;
 
-    ("Cos" "Cos[x▮]" xah-wolfram--ahf)
-    ("Degree" "°" xah-wolfram--ahf)
-    ("Function" "Function[{x▮},expr]" xah-wolfram--ahf)
-    ("GeometricTransformation" "GeometricTransformation[▮,tf]" xah-wolfram--ahf)
-    ("Graphics" "Graphics[▮, Axes -> True ]" xah-wolfram--ahf)
-    ("Graphics3D" "Graphics3D[▮, Axes -> True ]" xah-wolfram--ahf)
-    ("If" "If[▮,y,n]" xah-wolfram--ahf)
-    ("Map" "Map[▮, list,{1}]" xah-wolfram--ahf)
-    ("Module" "Module[{x=2▮},expr]" xah-wolfram--ahf)
-    ("ParametricPlot3D" "ParametricPlot3D[\n{Cos[u]*(2 + 1*Cos[v]), Sin[u]*(2 + 1*Cos[v]), 1*Sin[v]} , \n{u, 0, 6}, \n{v, 0, 6}, \n PlotPoints -> 100,\n Axes -> True,\n Boxed -> True,\n BoundaryStyle -> Directive[Black, Thin],\n PlotStyle -> Directive[White, Opacity[0.7], Specularity[10, 20]],\n Lighting -> \"Neutral\"]\n\n" xah-wolfram--ahf)
-    ("Plot" "Plot[ Sin[x], {x, 1, 9}]" xah-wolfram--ahf)
-    ("PlotRange" "PlotRange->{9▮}" xah-wolfram--ahf)
-    ("Table" "Table[ ▮, {x, 1, 9}]" xah-wolfram--ahf)
-    ("With" "With[{x=2▮},expr]" xah-wolfram--ahf)
+    ("Cos" "Cos[x▮]" xah-wolfram--abhook)
+    ("Degree" "°" xah-wolfram--abhook)
+    ("Function" "Function[{x▮},expr]" xah-wolfram--abhook)
+    ("GeometricTransformation" "GeometricTransformation[▮,tf]" xah-wolfram--abhook)
+    ("Graphics" "Graphics[▮, Axes -> True ]" xah-wolfram--abhook)
+    ("Graphics3D" "Graphics3D[▮, Axes -> True ]" xah-wolfram--abhook)
+    ("If" "If[▮,y,n]" xah-wolfram--abhook)
+    ("Map" "Map[▮, list,{1}]" xah-wolfram--abhook)
+    ("Module" "Module[{x=2▮},expr]" xah-wolfram--abhook)
+    ("ParametricPlot3D" "ParametricPlot3D[\n{Cos[u]*(2 + 1*Cos[v]), Sin[u]*(2 + 1*Cos[v]), 1*Sin[v]} , \n{u, 0, 6}, \n{v, 0, 6}, \n PlotPoints -> 100,\n Axes -> True,\n Boxed -> True,\n BoundaryStyle -> Directive[Black, Thin],\n PlotStyle -> Directive[White, Opacity[0.7], Specularity[10, 20]],\n Lighting -> \"Neutral\"]\n\n" xah-wolfram--abhook)
+    ("Plot" "Plot[ Sin[x], {x, 1, 9}]" xah-wolfram--abhook)
+    ("PlotRange" "PlotRange->{9▮}" xah-wolfram--abhook)
+    ("Table" "Table[ ▮, {x, 1, 9}]" xah-wolfram--abhook)
+    ("With" "With[{x=2▮},expr]" xah-wolfram--abhook)
 
     ;;
     )
 
   "Abbrev table for `xah-wolfram-mode'"
+  :case-fixed t
+  :system t
+  :enable-function 'xah-wolfram-abbrev-enable-function
   )
 
-(abbrev-table-put xah-wolfram-mode-abbrev-table :regexp "\\([_-*0-9A-Za-z]+\\)")
-(abbrev-table-put xah-wolfram-mode-abbrev-table :case-fixed t)
-(abbrev-table-put xah-wolfram-mode-abbrev-table :system t)
-(abbrev-table-put xah-wolfram-mode-abbrev-table :enable-function 'xah-wolfram-abbrev-enable-function)
-
-
+;; HHHH---------------------------------------------------
 ;; indent/reformat related
 
 (defun xah-wolfram-complete-or-indent ()
@@ -2522,13 +2521,13 @@ Version: 2021-07-25 2021-09-22 2022-09-14 2022-09-21 2023-07-31"
       ["\n\n\n+" "\n\n"]
       ])))
 
-
+;; HHHH---------------------------------------------------
 ;; completion
 
 (defun xah-wolfram-complete-symbol ()
   "Perform keyword completion on current symbol.
 
-version 2017-01-27 2021-10-28 2022-04-07 2023-02-12"
+Version: 2017-01-27 2021-10-28 2022-04-07 2023-02-12"
   (interactive)
   (let ( (xp0 (point)) xp1 xp2 xcurSym xresultSym)
     (save-excursion
@@ -2548,7 +2547,7 @@ version 2017-01-27 2021-10-28 2022-04-07 2023-02-12"
     (insert xresultSym "[  ]")
     (backward-char 2)))
 
-
+;; HHHH---------------------------------------------------
 ;; syntax table
 (defvar xah-wolfram-mode-syntax-table nil "Syntax table for `xah-wolfram-mode'.")
 
@@ -2598,7 +2597,7 @@ version 2017-01-27 2021-10-28 2022-04-07 2023-02-12"
 
    xsynTable))
 
-
+;; HHHH---------------------------------------------------
 ;; syntax coloring related
 
 (defface xah-wolfram-var-name
@@ -2628,7 +2627,7 @@ version 2017-01-27 2021-10-28 2022-04-07 2023-02-12"
    ("\\b[a-z][A-Za-z0-9]*" . font-lock-variable-name-face)
    ("\\b[A-Z][A-Za-z0-9]*" . font-lock-warning-face)))
 
-
+;; HHHH---------------------------------------------------
 ;; keybinding
 
 (defvar xah-wolfram-mode-map nil "Keybinding for `xah-wolfram-mode'")
@@ -2653,7 +2652,7 @@ version 2017-01-27 2021-10-28 2022-04-07 2023-02-12"
 
   (define-key xah-wolfram-leader-map (kbd "<return>") 'xah-wolfram-smart-newline))
 
-
+;; HHHH---------------------------------------------------
 
 ;;;###autoload
 (define-derived-mode xah-wolfram-mode prog-mode "∑Wolfram"
