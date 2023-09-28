@@ -3,7 +3,7 @@
 ;; Copyright © 2021-2023 by Xah Lee
 
 ;; Author: Xah Lee ( http://xahlee.info/ )
-;; Version: 2.1.20230825164059
+;; Version: 2.2.20230928125250
 ;; Created: 2021-07-24
 ;; Package-Requires: ((emacs "27"))
 ;; Keywords: languages, Wolfram Language, Mathematica
@@ -53,7 +53,7 @@
 ;; you can change it by put this in your emacs init, before loading the mode
 ;; (setq xah-major-mode-leader-key (kbd "<f6>"))
 
-;; HHHH---------------------------------------------------
+
 ;;; Code:
 
 (defun xah-wolfram-get-bounds-of-block ()
@@ -103,53 +103,53 @@ Version: 2017-02-21 2021-08-14"
        Pairs))))
 
 (defun xah-wolfram-run-script (&optional OptStr CurrentPrefixArg)
-  "Execute the current file with wolframscript.
+  "Execute the current file with WolframScript.
 The current file should have extension wls wl m nb.
 
-When `universal-argument' is called first, prompt user to give wolframscript command line options. (“-file name” is always used.)
+When `universal-argument' is called first, prompt user to give WolframScript command line options. (「-file name」 is always used.)
 
 If the file is modified or not saved, save it automatically before run.
-Version: 2021-10-27 2022-04-07 2023-08-25"
+Version: 2021-10-27 2023-08-25 2023-09-28"
   (interactive)
-  (let (xuserSay xcmdStr xoptionsStr)
-    (setq xuserSay
+  (let (xpromptAnswer
+        xoptionsStr xcmdStr
+        (xbuff (generate-new-buffer "*WolframScript output*")))
+    (setq xpromptAnswer
           (if OptStr
               OptStr
             (if (or CurrentPrefixArg current-prefix-arg)
-                (substring
-                 (completing-read
-                  "wolframscript additional options:"
-                  '(
-                    "1 → -print"
-                    "2 → -print all"
-                    "3 → Ask"
-                    "4 → None"
-                    ) nil t)
-                 4)
+                (let ((completion-ignore-case t))
+                  (completing-read
+                   "WolframScript additional options:"
+                   '(
+                     "-print"
+                     "-print all"
+                     "Other"
+                     "None"
+                     ) nil t))
               ""
               )))
     (if buffer-file-name nil (save-buffer))
-    (if (buffer-modified-p) (save-buffer) nil )
+    (if (buffer-modified-p) (save-buffer) nil)
     (setq xoptionsStr
           (cond
-           ((string-equal xuserSay "None") "")
-           ((string-equal xuserSay "Ask")
+           ((string-equal xpromptAnswer "None") "")
+           ((string-equal xpromptAnswer "Other")
             (read-string "extra options:" ""))
-           (t xuserSay)))
+           (t xpromptAnswer)))
     (setq xcmdStr (format  "wolframscript -file %s %s" (shell-quote-argument buffer-file-name)  xoptionsStr))
-    ;; (message "Runing 「%s」" xcmdStr)
-    (shell-command xcmdStr "*wolframscript output*")))
+    (message "Running 「%s」" xcmdStr)
+    (shell-command xcmdStr xbuff)
+    (display-buffer xbuff)))
 
 (defun xah-wolfram-run-script-print-all ()
-  "Execute the current file with wolframscript with option -print all.
+  "Execute the current file with WolframScript with option -print all.
 If the file is modified or not saved, save it automatically before run.
 Version: 2021-10-27"
   (interactive)
   (xah-wolfram-run-script "-print all"))
 
-(defvar xah-wolfram-special-char nil "List of Wolfram Language symbols. Part of many.")
-
-(setq xah-wolfram-special-char
+(defvar xah-wolfram-special-char
 '(
 
 "\\[FormalA]"
@@ -273,8 +273,8 @@ Version: 2021-10-27"
 "\\[FormalEpsilon]"
 
 )
-)
-
+ "List of Wolfram Language named characters.")
+ 
 (defvar xah-wolfram-funs1 nil "List of Wolfram Language symbols. Part of many.")
 
 (setq xah-wolfram-funs1
@@ -2249,7 +2249,7 @@ Version: 2021-10-27"
        xah-wolfram-dollar-names
        ))
 
-;; HHHH---------------------------------------------------
+
 
 (defun xah-wolfram-doc-lookup ()
   "Look up the symbol under cursor in Wolfram doc site in web browser.
@@ -2268,7 +2268,7 @@ Version: 2021-08-06"
   (interactive)
   (insert ";\n"))
 
-;; HHHH---------------------------------------------------
+
 ;; abbrev
 
 (defun xah-wolfram-abbrev-enable-function ()
@@ -2394,7 +2394,7 @@ Version: 2016-10-24"
   :enable-function 'xah-wolfram-abbrev-enable-function
   )
 
-;; HHHH---------------------------------------------------
+
 ;; indent/reformat related
 
 (defun xah-wolfram-complete-or-indent ()
@@ -2521,7 +2521,7 @@ Version: 2021-07-25 2021-09-22 2022-09-14 2022-09-21 2023-07-31"
       ["\n\n\n+" "\n\n"]
       ])))
 
-;; HHHH---------------------------------------------------
+
 ;; completion
 
 (defun xah-wolfram-complete-symbol ()
@@ -2547,7 +2547,7 @@ Version: 2017-01-27 2021-10-28 2022-04-07 2023-02-12"
     (insert xresultSym "[  ]")
     (backward-char 2)))
 
-;; HHHH---------------------------------------------------
+
 ;; syntax table
 (defvar xah-wolfram-mode-syntax-table nil "Syntax table for `xah-wolfram-mode'.")
 
@@ -2597,7 +2597,7 @@ Version: 2017-01-27 2021-10-28 2022-04-07 2023-02-12"
 
    xsynTable))
 
-;; HHHH---------------------------------------------------
+
 ;; syntax coloring related
 
 (defface xah-wolfram-var-name
@@ -2627,7 +2627,7 @@ Version: 2017-01-27 2021-10-28 2022-04-07 2023-02-12"
    ("\\b[a-z][A-Za-z0-9]*" . font-lock-variable-name-face)
    ("\\b[A-Z][A-Za-z0-9]*" . font-lock-warning-face)))
 
-;; HHHH---------------------------------------------------
+
 ;; keybinding
 
 (defvar xah-wolfram-mode-map nil "Keybinding for `xah-wolfram-mode'")
@@ -2652,7 +2652,7 @@ Version: 2017-01-27 2021-10-28 2022-04-07 2023-02-12"
 
   (define-key xah-wolfram-leader-map (kbd "<return>") 'xah-wolfram-smart-newline))
 
-;; HHHH---------------------------------------------------
+
 
 ;;;###autoload
 (define-derived-mode xah-wolfram-mode prog-mode "∑Wolfram"
