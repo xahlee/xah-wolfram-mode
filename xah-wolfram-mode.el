@@ -3,7 +3,7 @@
 ;; Copyright © 2021-2023 by Xah Lee
 
 ;; Author: Xah Lee ( http://xahlee.info/ )
-;; Version: 2.2.20230928125250
+;; Version: 2.3.20231013202540
 ;; Created: 2021-07-24
 ;; Package-Requires: ((emacs "27"))
 ;; Keywords: languages, Wolfram Language, Mathematica
@@ -59,7 +59,7 @@
 (defun xah-wolfram-get-bounds-of-block ()
   "Return the boundary (START . END) of current block.
 Version: 2023-02-12"
-  (let ( xp1 xp2 (xblankRegex "\n[ \t]*\n"))
+  (let (xp1 xp2 (xblankRegex "\n[ \t]*\n"))
     (save-excursion
       (setq xp1 (if (re-search-backward xblankRegex nil 1)
                     (goto-char (match-end 0))
@@ -67,7 +67,7 @@ Version: 2023-02-12"
       (setq xp2 (if (re-search-forward xblankRegex nil 1)
                     (match-beginning 0)
                   (point))))
-    (cons xp1 xp2 )))
+    (cons xp1 xp2)))
 
 (defun xah-wolfram-get-bounds-of-block-or-region ()
   "If region is active, return its boundary, else same as `xah-get-bounds-of-block'.
@@ -2433,93 +2433,97 @@ Version: 2021-07-26"
 
 (defun xah-wolfram-format-compact ()
   "Format current block in compact style.
-Version: 2021-08-01 2021-09-22 2023-07-31"
+Version: 2021-08-01 2021-09-22 2023-07-31 2023-10-13"
   (interactive)
-  (let* ((xbds (xah-wolfram-get-bounds-of-block-or-region))
-         (xp1 (car xbds))
-         (xp2 (cdr xbds)))
-    (xah-wolfram-replace-regexp-pairs-region
-     xp1 xp2
-     [
-      ["\\([A-Za-z0-9]\\) @" "\\1@"]
-      ] t nil t)
-    (xah-wolfram-replace-regexp-pairs-region
-     xp1 xp2
-     [
-      ["  " " "]
-      [" [" "["]
-      ["[ " "["]
-      [" ]" "]"]
-      [" =" "="]
-      ["= " "="]
-      [" &" "&"]
-      [" /@ " "/@"]
-      [" -> " "->"]
-      [" :> " ":>"]
-      [" := " ":="]
-      [" , " ","]
-      [", " ","]
-      [" ;" ";"]
-      ]
-     )))
+  (let (xp1 xp2)
+    (let ((xbds (xah-wolfram-get-bounds-of-block-or-region)))
+      (setq xp1 (car xbds) xp2 (cdr xbds)))
+    (save-restriction
+      (narrow-to-region xp1 xp2)
+      (xah-wolfram-replace-regexp-pairs-region
+       (point-min) (point-max)
+       [
+        ["\\([A-Za-z0-9]\\) @" "\\1@"]
+        ] t nil t)
+      (xah-wolfram-replace-regexp-pairs-region
+       (point-min) (point-max)
+       [
+        ["  " " "]
+        [" [" "["]
+        ["[ " "["]
+        [" ]" "]"]
+        [" =" "="]
+        ["= " "="]
+        [" &" "&"]
+        [" /@ " "/@"]
+        [" -> " "->"]
+        [" :> " ":>"]
+        [" := " ":="]
+        [" , " ","]
+        [", " ","]
+        [" ;" ";"]
+        ]
+       ))))
 
 (defun xah-wolfram-format-pretty ()
   "Format current block in readable style.
-Version: 2021-07-25 2021-09-22 2022-09-14 2022-09-21 2023-07-31"
+Version: 2021-07-25 2023-07-31 2023-10-13"
   (interactive)
-  (let* ((xbds (xah-wolfram-get-bounds-of-block-or-region))
-         (xp1 (car xbds))
-         (xp2 (cdr xbds)))
-    (xah-wolfram-replace-regexp-pairs-region
-     xp1 xp2
-     [
-      ;; before comma
-      ["\\([]}A-Za-z0-9]\\) ," "\\1,"]
-      ;; after comma
-      [",\\([#({A-Za-z0-9]\\)" ", \\1"]
+  (let (xp1 xp2)
+    (let ((xbds (xah-wolfram-get-bounds-of-block-or-region)))
+      (setq xp1 (car xbds) xp2 (cdr xbds)))
+    (save-restriction
+      (narrow-to-region xp1 xp2)
+      (xah-wolfram-replace-regexp-pairs-region
+       (point-min) (point-max)
+       [
+        ;; before comma
+        ["\\([]}A-Za-z0-9]\\) ," "\\1,"]
+        ;; after comma
+        [",\\([#({A-Za-z0-9]\\)" ", \\1"]
 
-      ;; before plus
-      ["\\([A-Za-z0-9]\\)\\+" "\\1 +"]
-      ;; after plus
-      ["\\+\\([(A-Za-z0-9]\\)" "+ \\1"]
+        ;; before plus
+        ["\\([A-Za-z0-9]\\)\\+" "\\1 +"]
+        ;; after plus
+        ["\\+\\([(A-Za-z0-9]\\)" "+ \\1"]
 
-      ;; before equal
-      ["\\([A-Za-z0-9]\\)=" "\\1 ="]
-      ;; after equal
-      ["=\\([(A-Za-z0-9]\\)" "= \\1"]
+        ;; before equal
+        ["\\([A-Za-z0-9]\\)=" "\\1 ="]
+        ;; after equal
+        ["=\\([(A-Za-z0-9]\\)" "= \\1"]
 
-      ;; before colon equal
-      ["\\(\\]\\):=" "\\1 :="]
-      ;; after colon equal
-      [":=\\(\\]\\)" ":= \\1"]
+        ;; before colon equal
+        ["\\(\\]\\):=" "\\1 :="]
+        ;; after colon equal
+        [":=\\(\\]\\)" ":= \\1"]
 
-      ;; before triple equal
-      ["\\([]A-Za-z0-9]\\) *===" "\\1 ==="]
-      ;; after triple equal
-      ["===\\([(A-Za-z0-9]\\)" " === \\1"]
+        ;; before triple equal
+        ["\\([]A-Za-z0-9]\\) *===" "\\1 ==="]
+        ;; after triple equal
+        ["===\\([(A-Za-z0-9]\\)" " === \\1"]
 
-      ;; before double equal
-      ["\\([]A-Za-z0-9]\\)==" "\\1 =="]
-      ;; after double equal
-      ["==\\([(A-Za-z0-9]\\)" " == \\1"]
+        ;; before double equal
+        ["\\([]A-Za-z0-9]\\)==" "\\1 =="]
+        ;; after double equal
+        ["==\\([(A-Za-z0-9]\\)" " == \\1"]
 
-      ;; ["\\([A-Za-z0-9]\\):=" "\\1 :="]
-      ;; [":=\\([(A-Za-z0-9]\\)" ":= \\1"]
+        ;; ["\\([A-Za-z0-9]\\):=" "\\1 :="]
+        ;; [":=\\([(A-Za-z0-9]\\)" ":= \\1"]
 
-      ;; before slash at
-      ["\\([)&A-Za-z]\\)/@" "\\1 /@"]
-      ;; after slash at
-      ["/@\\([(A-Za-z]\\)" "/@ \\1"]
+        ;; before slash at
+        ["\\([)&A-Za-z]\\)/@" "\\1 /@"]
+        ;; after slash at
+        ["/@\\([(A-Za-z]\\)" "/@ \\1"]
 
-      ["\n;" ";"]
-      ] t)
-    (xah-wolfram-replace-regexp-pairs-region
-     xp1 xp2
-     [
-      ;; [" := " ":="]
-      ["]:>" "] :>"]
-      ["\n\n\n+" "\n\n"]
-      ])))
+        ["\n;" ";"]
+        ] t)
+      (xah-wolfram-replace-regexp-pairs-region
+       (point-min) (point-max)
+       [
+        ;; [" := " ":="]
+        ["]:>" "] :>"]
+        ["\n\n\n+" "\n\n"]
+        ]))))
 
 
 ;; completion
@@ -2527,9 +2531,9 @@ Version: 2021-07-25 2021-09-22 2022-09-14 2022-09-21 2023-07-31"
 (defun xah-wolfram-complete-symbol ()
   "Perform keyword completion on current symbol.
 
-Version: 2017-01-27 2021-10-28 2022-04-07 2023-02-12"
+Version: 2017-01-27 2023-02-12 2023-09-29"
   (interactive)
-  (let ( (xp0 (point)) xp1 xp2 xcurSym xresultSym)
+  (let ((xp0 (point)) xp1 xp2 xcurSym xresultSym)
     (save-excursion
       (skip-chars-backward "$A-Za-z0-9")
       (setq xp1 (point))
@@ -2538,11 +2542,10 @@ Version: 2017-01-27 2021-10-28 2022-04-07 2023-02-12"
       (setq xp2 (point)))
     (setq
      xcurSym
-     (if (or (null xp1) (null xp2) (eq xp1 xp2))
+     (if (or (not xp1) (not xp2) (eq xp1 xp2))
          ""
-       (buffer-substring-no-properties xp1 xp2)))
-    (when (null xcurSym) (setq xcurSym ""))
-    (setq xresultSym (completing-read "" xah-wolfram-all-symbols nil nil xcurSym))
+       (buffer-substring-no-properties xp1 xp2))
+     xresultSym (completing-read "" xah-wolfram-all-symbols nil nil xcurSym))
     (delete-region xp1 xp2)
     (insert xresultSym "[  ]")
     (backward-char 2)))
