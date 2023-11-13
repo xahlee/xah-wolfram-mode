@@ -3,7 +3,7 @@
 ;; Copyright © 2021-2023 by Xah Lee
 
 ;; Author: Xah Lee ( http://xahlee.info/ )
-;; Version: 2.3.20231024223615
+;; Version: 2.4.20231112175428
 ;; Created: 2021-07-24
 ;; Package-Requires: ((emacs "27"))
 ;; Keywords: languages, Wolfram Language, Mathematica
@@ -2262,6 +2262,62 @@ Version: 2021-07-25 2021-09-15 2021-09-20"
          (xurl (format "https://reference.wolfram.com/language/ref/%s.html" xword)))
     (browse-url xurl)))
 
+(defun xah-wolfram-delete-comment-backward ()
+  "Delete comment to the left of cursor.
+Example:
+(* comment *)▮
+Version: 2023-11-12"
+  (interactive)
+  (let ((xp0 (point)))
+    ;; 41 is right paren, 42 is asterisk
+    (when (and (eq (char-before) 41) (eq (char-before (1- xp0)) 42))
+      (search-backward "(*")
+      (kill-region (point) xp0))))
+
+(defun xah-wolfram-smart-delete-backward ()
+  "Delete a thing to the left of cursor.
+If cursor left is a string e.g. 「\"▮some\"▮」, delete whole string.
+If cursor left is a bracket e.g. 「[▮some]▮」, delete whole bracketed text.
+If cursor left is comment bracket e.g. 「(▮* comment *)▮」, delete whole element.
+Else, just delete backward 1 char.
+Deleted text can be pasted later (except 1 char).
+
+Version: 2023-11-12"
+  (interactive)
+  (let ((xp0 (point)))
+    (cond
+     ;; 41 is right paren, 42 is asterisk
+     ((and (eq (char-before) 41) (eq (char-before (1- xp0)) 42))
+      (xah-wolfram-delete-comment-backward))
+     ((prog2 (backward-char) (looking-at "\\s)") (forward-char))
+      (xah-delete-backward-bracket-text))
+     ((prog2 (backward-char) (looking-at "\\s(") (forward-char))
+      (let ((xp0 (point)))
+        (progn
+          (goto-char (1- xp0))
+          (forward-sexp)
+          (kill-region (1- xp0) (point)))))
+     ((prog2 (backward-char) (looking-at "\\s\"") (forward-char))
+      (let ((xp0 (point)) xp1 xp2)
+        ;; xp1 xp2 are the begin and end pos of the string
+        (if (nth 3 (syntax-ppss))
+            (setq xp1 (1- xp0)
+                  xp2
+                  (progn
+                    (backward-char)
+                    (forward-sexp)
+                    (point)))
+          (setq xp2 (point)
+                xp1
+                (progn (forward-sexp -1) (point))))
+        (if current-prefix-arg
+            (progn (goto-char xp2)
+                   (delete-char -1)
+                   (goto-char xp1)
+                   (delete-char -1))
+          (kill-region xp1 xp2))))
+     (t (delete-char -1)))))
+
 (defun xah-wolfram-smart-newline ()
   "Insert a semicolon and a newline.
 Version: 2021-08-06"
@@ -2398,20 +2454,29 @@ Version: 2016-10-24"
      xah-wolfram-mode-abbrev-table x
      (upcase-initials x)
      'xah-wolfram--abhook))
- '("false"
+ '(
+
+   "pi"
+
    "if"
    "map"
    "module"
-   "pi"
-   "power"
-   "product"
+   "with"
+   "plot"
    "range"
    "table"
+
    "sin"
    "cos"
    "tan"
+
+   "power"
+   "product"
+   "sum"
+
    "true"
-   "with"
+   "false"
+
    ))
 
 ;; generate abbrev for simple template of functions. just add [▮]
@@ -2678,12 +2743,14 @@ Version: 2017-01-27 2023-02-12 2023-09-29"
     xah-wolfram-leader-map)
 
   (define-key xah-wolfram-leader-map (kbd "TAB") 'xah-wolfram-complete-or-indent)
-  (define-key xah-wolfram-leader-map (kbd "f") 'xah-wolfram-format-pretty)
-  (define-key xah-wolfram-leader-map (kbd "t") 'xah-wolfram-replace-special-char)
-  (define-key xah-wolfram-leader-map (kbd "e") 'xah-wolfram-complete-symbol)
-  (define-key xah-wolfram-leader-map (kbd "h") 'xah-wolfram-doc-lookup)
   (define-key xah-wolfram-leader-map (kbd "c") 'xah-wolfram-format-compact)
+  (define-key xah-wolfram-leader-map (kbd "d") 'xah-wolfram-smart-delete-backward)
+  (define-key xah-wolfram-leader-map (kbd "e") 'xah-wolfram-complete-symbol)
+
+  (define-key xah-wolfram-leader-map (kbd "f") 'xah-wolfram-format-pretty)
+  (define-key xah-wolfram-leader-map (kbd "h") 'xah-wolfram-doc-lookup)
   (define-key xah-wolfram-leader-map (kbd "r") 'xah-wolfram-run-script)
+  (define-key xah-wolfram-leader-map (kbd "t") 'xah-wolfram-replace-special-char)
   (define-key xah-wolfram-leader-map (kbd "p") 'xah-wolfram-run-script-print-all)
 
   (define-key xah-wolfram-leader-map (kbd "<return>") 'xah-wolfram-smart-newline))
