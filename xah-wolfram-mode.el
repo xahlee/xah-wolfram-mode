@@ -3,7 +3,7 @@
 ;; Copyright © 2021-2023 by Xah Lee
 
 ;; Author: Xah Lee ( http://xahlee.info/ )
-;; Version: 2.4.20231112175428
+;; Version: 2.5.20231212124419
 ;; Created: 2021-07-24
 ;; Package-Requires: ((emacs "27"))
 ;; Keywords: languages, Wolfram Language, Mathematica
@@ -104,12 +104,12 @@ Version: 2017-02-21 2021-08-14"
 
 (defun xah-wolfram-run-script (&optional OptStr CurrentPrefixArg)
   "Execute the current file with WolframScript.
-The current file should have extension wls wl m nb.
+The current file should have one of the filename extensions: wls wl m nb.
 
 When `universal-argument' is called first, prompt user to give WolframScript command line options. (「-file name」 is always used.)
 
 If the file is modified or not saved, save it automatically before run.
-Version: 2021-10-27 2023-08-25 2023-09-28"
+Version: 2021-10-27 2023-09-28 2023-12-06"
   (interactive)
   (let (xpromptAnswer
         xoptionsStr xcmdStr
@@ -2264,42 +2264,81 @@ Version: 2021-07-25 2021-09-15 2021-09-20"
 
 (defun xah-wolfram-delete-comment-backward ()
   "Delete comment to the left of cursor.
-Example:
+cursor must be at end of comment, like this
 (* comment *)▮
-Version: 2023-11-12"
+Version: 2023-11-12 2023-12-12"
   (interactive)
   (let ((xp0 (point)))
     ;; 41 is right paren, 42 is asterisk
-    (when (and (eq (char-before) 41) (eq (char-before (1- xp0)) 42))
+    (when (and (eq (char-before) 41) (eq (char-before (1- xp0)) ?*))
       (search-backward "(*")
       (kill-region (point) xp0))))
 
 (defun xah-wolfram-smart-delete-backward ()
   "Delete a thing to the left of cursor.
+If cursor left is comment bracket e.g. 「(▮* comment *)▮」, delete whole comment.
 If cursor left is a string e.g. 「\"▮some\"▮」, delete whole string.
 If cursor left is a bracket e.g. 「[▮some]▮」, delete whole bracketed text.
-If cursor left is comment bracket e.g. 「(▮* comment *)▮」, delete whole element.
 Else, just delete backward 1 char.
 Deleted text can be pasted later (except 1 char).
 
-Version: 2023-11-12"
+When `universal-argument' is called first, do not delete the inner text.
+
+Version: 2023-11-12 2023-12-12"
   (interactive)
   (let ((xp0 (point)))
     (cond
-     ;; 41 is right paren, 42 is asterisk
-     ((and (eq (char-before) 41) (eq (char-before (1- xp0)) 42))
+     ;; inside comment
+     ((nth 4 (syntax-ppss)) (delete-char -1))
+
+     ;; handle comment case when cursor at end, e.g. *)▮
+     ;; 41 is right paren
+     ((and (eq (char-before) 41) (eq (char-before (1- xp0)) ?*))
       (xah-wolfram-delete-comment-backward))
+
+     ;; handle comment case when cursor is at (▮*
+     ;; 40 is left paren
+     ((and (eq (char-before) 40) (eq (char-after) ?*))
+      (search-forward "*)")
+      (xah-wolfram-delete-comment-backward))
+
+     ;; left is closing bracket
      ((prog2 (backward-char) (looking-at "\\s)") (forward-char))
-      (xah-delete-backward-bracket-text))
+      (let (xp1)
+        (forward-sexp -1)
+        (setq xp1 (point))
+        (if current-prefix-arg
+            (progn
+              (goto-char xp0)
+              (delete-char -1)
+              (push-mark (point))
+              (goto-char xp1)
+              (delete-char 1))
+          (progn
+            (kill-region xp1 xp0)))))
+
+     ;; left is opening bracket
      ((prog2 (backward-char) (looking-at "\\s(") (forward-char))
-      (let ((xp0 (point)))
-        (progn
-          (goto-char (1- xp0))
-          (forward-sexp)
-          (kill-region (1- xp0) (point)))))
+      (let (xp1 xp2)
+        (backward-char)
+        (setq xp1 (point))
+        (forward-sexp)
+        (setq xp2 (point))
+        (if current-prefix-arg
+            (progn
+              (goto-char xp2)
+              (delete-char -1)
+              (push-mark (point))
+              (goto-char xp1)
+              (delete-char 1))
+          (progn
+            (kill-region xp1 xp2)))))
+
+     ;; handle string case
      ((prog2 (backward-char) (looking-at "\\s\"") (forward-char))
-      (let ((xp0 (point)) xp1 xp2)
+      (let (xp1 xp2)
         ;; xp1 xp2 are the begin and end pos of the string
+        ;; if inside string
         (if (nth 3 (syntax-ppss))
             (setq xp1 (1- xp0)
                   xp2
@@ -2311,10 +2350,12 @@ Version: 2023-11-12"
                 xp1
                 (progn (forward-sexp -1) (point))))
         (if current-prefix-arg
-            (progn (goto-char xp2)
-                   (delete-char -1)
-                   (goto-char xp1)
-                   (delete-char -1))
+            (progn
+              (message "prefix case")
+              (goto-char xp2)
+              (delete-char -1)
+              (goto-char xp1)
+              (delete-char 1))
           (kill-region xp1 xp2))))
      (t (delete-char -1)))))
 
@@ -2393,11 +2434,13 @@ Version: 2016-10-24"
     ("deg" "°" xah-wolfram--abhook)
     ("eq" "== " xah-wolfram--abhook)
     ("eqq" "=== " xah-wolfram--abhook)
-    ("same" "=== " xah-wolfram--abhook)
     ("fn" "((#▮) &)" xah-wolfram--abhook)
+    ("m" "/@ " xah-wolfram--abhook)
     ("pt" " //Print" xah-wolfram--abhook)
     ("ra" "-> ▮" xah-wolfram--abhook)
+    ("same" "=== " xah-wolfram--abhook)
     ("set" "= " xah-wolfram--abhook)
+    ("asso" "<|▮a -> 1, b -> 2|>" xah-wolfram--abhook)
 
     ;; common abbrevs
 
@@ -2409,20 +2452,24 @@ Version: 2016-10-24"
 
     ;; odd abbrevs
 
+    ("assoc" "Association" xah-wolfram--abhook)
     ("ff" "FullForm" xah-wolfram--abhook)
     ("fun" "Function" xah-wolfram--abhook)
     ("g3d" "Graphics3D" xah-wolfram--abhook)
     ("gc" "GraphicsComplex[▮,]" xah-wolfram--abhook)
     ("gra" "Graphics" xah-wolfram--abhook)
     ("md" "Module" xah-wolfram--abhook)
+    ("p" "Print" xah-wolfram--abhook)
     ("pp3" "ParametricPlot3D" xah-wolfram--abhook)
     ("pp3d" "ParametricPlot3D"  xah-wolfram--abhook)
     ("pr" "PlotRange" xah-wolfram--abhook)
     ("prod" "Product" xah-wolfram--abhook)
+    ("regex" "RegularExpression" xah-wolfram--abhook)
     ("sl" "StringLength" xah-wolfram--abhook)
 
     ;; function templates
 
+    ("Association" "Association[▮a -> 1, b -> 2]" xah-wolfram--abhook)
     ("Degree" "°" xah-wolfram--abhook)
     ("Function" "Function[{x▮},expr]" xah-wolfram--abhook)
     ("GeometricTransformation" "GeometricTransformation[▮,tf]" xah-wolfram--abhook)
@@ -2435,6 +2482,7 @@ Version: 2016-10-24"
     ("ParametricPlot3D" "ParametricPlot3D[\n{Cos[u]*(2 + 1*Cos[v]), Sin[u]*(2 + 1*Cos[v]), 1*Sin[v]} , \n{u, 0, 6}, \n{v, 0, 6}, \n PlotPoints -> 100,\n Axes -> True,\n Boxed -> True,\n BoundaryStyle -> Directive[Black, Thin],\n PlotStyle -> Directive[White, Opacity[0.7], Specularity[10, 20]],\n Lighting -> \"Neutral\"]\n\n" xah-wolfram--abhook)
     ("Plot" "Plot[ Sin[x], {x, 1, 9}]" xah-wolfram--abhook)
     ("PlotRange" "PlotRange->{9▮}" xah-wolfram--abhook)
+    ("RegularExpression" "RegularExpression[\"▮\"]" xah-wolfram--abhook)
     ("Table" "Table[ ▮, {x, 1, 9}]" xah-wolfram--abhook)
     ("With" "With[{x=2▮}, expr]" xah-wolfram--abhook)
 
