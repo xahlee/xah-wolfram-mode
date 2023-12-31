@@ -3,7 +3,7 @@
 ;; Copyright © 2021-2023 by Xah Lee
 
 ;; Author: Xah Lee ( http://xahlee.info/ )
-;; Version: 2.5.20231212124419
+;; Version: 2.5.20231231134414
 ;; Created: 2021-07-24
 ;; Package-Requires: ((emacs "27"))
 ;; Keywords: languages, Wolfram Language, Mathematica
@@ -109,11 +109,11 @@ The current file should have one of the filename extensions: wls wl m nb.
 When `universal-argument' is called first, prompt user to give WolframScript command line options. (「-file name」 is always used.)
 
 If the file is modified or not saved, save it automatically before run.
-Version: 2021-10-27 2023-09-28 2023-12-06"
+Version: 2021-10-27 2023-12-06 2023-12-31"
   (interactive)
   (let (xpromptAnswer
         xoptionsStr xcmdStr
-        (xbuff (generate-new-buffer "*WolframScript output*")))
+        (xbuff "*Wolfram output*"))
     (setq xpromptAnswer
           (if OptStr
               OptStr
@@ -2444,11 +2444,12 @@ Version: 2016-10-24"
 
     ;; common abbrevs
 
-    ("asin" "ArcSin" xah-wolfram--abhook)
     ("acos" "ArcCos" xah-wolfram--abhook)
+    ("asin" "ArcSin" xah-wolfram--abhook)
     ("atan" "ArcTan" xah-wolfram--abhook)
-    ("lim" "Limit" xah-wolfram--abhook)
     ("inf" "Infinity" xah-wolfram--abhook)
+    ("len" "Length" xah-wolfram--abhook)
+    ("lim" "Limit" xah-wolfram--abhook)
 
     ;; odd abbrevs
 
