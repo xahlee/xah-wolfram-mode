@@ -1,9 +1,9 @@
 ;;; xah-wolfram-mode.el --- Major mode for editing Wolfram Language. -*- coding: utf-8; lexical-binding: t; -*-
 
-;; Copyright © 2021-2023 by Xah Lee
+;; Copyright © 2021, 2024 by Xah Lee
 
 ;; Author: Xah Lee ( http://xahlee.info/ )
-;; Version: 2.5.20231231134414
+;; Version: 2.6.20240228144516
 ;; Created: 2021-07-24
 ;; Package-Requires: ((emacs "27"))
 ;; Keywords: languages, Wolfram Language, Mathematica
@@ -35,9 +35,8 @@
 ;;
 ;; command and keys
 ;;
-;; TAB TAB         xah-wolfram-complete-or-indent
+;; TAB SPC           xah-wolfram-complete-symbol
 ;; TAB c           xah-wolfram-format-compact
-;; TAB e           xah-wolfram-complete-symbol
 ;; TAB f           xah-wolfram-format-pretty
 ;; TAB h           xah-wolfram-doc-lookup
 ;; TAB p           xah-wolfram-run-script-print-all
@@ -556,7 +555,7 @@ Version: 2021-10-27"
 "ComplexContourPlot" "Complexes" "ComplexExpand" "ComplexInfinity"
 "ComplexityFunction" "ComplexListPlot" "ComplexPlot" "ComplexPlot3D"
 "ComplexRegionPlot" "ComplexStreamPlot" "ComplexVectorPlot"
-"ComponentMeasurements" "ComponentwiseContextMenu" "Compose"
+"ComponentMeasurements" "ComponentwiseContextMenu"
 "ComposeList" "ComposeSeries" "CompositeQ" "Composition"
 "CompoundElement" "CompoundExpression" "CompoundPoissonDistribution"
 "CompoundPoissonProcess" "CompoundRenewalProcess" "Compress"
@@ -2431,7 +2430,6 @@ Version: 2016-10-24"
 
     ;; abbrevs that expand to syntax
 
-    ("deg" "°" xah-wolfram--abhook)
     ("eq" "== " xah-wolfram--abhook)
     ("eqq" "=== " xah-wolfram--abhook)
     ("fn" "((#▮) &)" xah-wolfram--abhook)
@@ -2447,12 +2445,17 @@ Version: 2016-10-24"
     ("acos" "ArcCos" xah-wolfram--abhook)
     ("asin" "ArcSin" xah-wolfram--abhook)
     ("atan" "ArcTan" xah-wolfram--abhook)
+    ("clr" "Clear[▮];" xah-wolfram--abhook)
+    ("deg" "Degree" xah-wolfram--abhook)
     ("inf" "Infinity" xah-wolfram--abhook)
     ("len" "Length" xah-wolfram--abhook)
     ("lim" "Limit" xah-wolfram--abhook)
 
     ;; odd abbrevs
 
+    ("at" "@ " xah-wolfram--abhook)
+    ("1st" "First[▮]" xah-wolfram--abhook)
+    ("last" "Last[▮]" xah-wolfram--abhook)
     ("assoc" "Association" xah-wolfram--abhook)
     ("ff" "FullForm" xah-wolfram--abhook)
     ("fun" "Function" xah-wolfram--abhook)
@@ -2471,15 +2474,14 @@ Version: 2016-10-24"
     ;; function templates
 
     ("Association" "Association[▮a -> 1, b -> 2]" xah-wolfram--abhook)
-    ("Degree" "°" xah-wolfram--abhook)
-    ("Function" "Function[{x▮},expr]" xah-wolfram--abhook)
+    ("Function" "Function[{x},▮expr]" xah-wolfram--abhook)
     ("GeometricTransformation" "GeometricTransformation[▮,tf]" xah-wolfram--abhook)
     ("Graphics" "Graphics[▮, Axes -> True ]" xah-wolfram--abhook)
     ("Graphics3D" "Graphics3D[▮, Axes -> True ]" xah-wolfram--abhook)
     ("If" "If[▮,y,n]" xah-wolfram--abhook)
     ("Limit" "Limit[x▮ , {x -> Infinity }]" xah-wolfram--abhook)
     ("Map" "Map[▮, list,{1}]" xah-wolfram--abhook)
-    ("Module" "Module[{x=2▮},expr]" xah-wolfram--abhook)
+    ("Module" "Module[{x=2▮},\nexpr]" xah-wolfram--abhook)
     ("ParametricPlot3D" "ParametricPlot3D[\n{Cos[u]*(2 + 1*Cos[v]), Sin[u]*(2 + 1*Cos[v]), 1*Sin[v]} , \n{u, 0, 6}, \n{v, 0, 6}, \n PlotPoints -> 100,\n Axes -> True,\n Boxed -> True,\n BoundaryStyle -> Directive[Black, Thin],\n PlotStyle -> Directive[White, Opacity[0.7], Specularity[10, 20]],\n Lighting -> \"Neutral\"]\n\n" xah-wolfram--abhook)
     ("Plot" "Plot[ Sin[x], {x, 1, 9}]" xah-wolfram--abhook)
     ("PlotRange" "PlotRange->{9▮}" xah-wolfram--abhook)
@@ -2565,14 +2567,13 @@ Version: 2023-07-22 2023-08-02"
      (t (xah-wolfram-format-pretty)))))
 
 (defun xah-wolfram-replace-special-char ()
-  "Prettify format current root sexp group.
-Root sexp group is the outmost sexp unit.
-Version: 2021-07-26"
+  "Replace \\[Pi] by Pi in current text block.
+Version: 2024-02-07"
   (interactive)
   (save-excursion
     (let (xp1 xp2)
-      (setq xp1 (if (search-backward "\n\n" nil t) (+ (point) 2) (point-min)))
-      (setq xp2 (if (search-forward "\n\n" nil t) (- (point) 2) (point-max)))
+      (setq xp1 (if (search-backward "\n\n" nil t) (+ (point) 2) (point-min))
+            xp2 (if (search-forward "\n\n" nil t) (- (point) 2) (point-max)))
       (save-restriction
         (narrow-to-region xp1 xp2)
         (let ((case-fold-search nil))
@@ -2786,23 +2787,24 @@ Version: 2017-01-27 2023-02-12 2023-09-29"
   (define-prefix-command 'xah-wolfram-leader-map)
 
   (define-key xah-wolfram-mode-map
-    (if (boundp 'xah-major-mode-leader-key)
-        xah-major-mode-leader-key
-      (kbd "TAB"))
-    xah-wolfram-leader-map)
+              (if (boundp 'xah-major-mode-leader-key)
+                  xah-major-mode-leader-key
+                (kbd "TAB"))
+              xah-wolfram-leader-map)
 
-  (define-key xah-wolfram-leader-map (kbd "TAB") 'xah-wolfram-complete-or-indent)
-  (define-key xah-wolfram-leader-map (kbd "c") 'xah-wolfram-format-compact)
-  (define-key xah-wolfram-leader-map (kbd "d") 'xah-wolfram-smart-delete-backward)
-  (define-key xah-wolfram-leader-map (kbd "e") 'xah-wolfram-complete-symbol)
+  ;; (define-key xah-wolfram-leader-map (kbd "SPC") #'xah-wolfram-complete-or-indent)
+  (define-key xah-wolfram-leader-map (kbd "SPC") #'xah-wolfram-complete-symbol)
 
-  (define-key xah-wolfram-leader-map (kbd "f") 'xah-wolfram-format-pretty)
-  (define-key xah-wolfram-leader-map (kbd "h") 'xah-wolfram-doc-lookup)
-  (define-key xah-wolfram-leader-map (kbd "r") 'xah-wolfram-run-script)
-  (define-key xah-wolfram-leader-map (kbd "t") 'xah-wolfram-replace-special-char)
-  (define-key xah-wolfram-leader-map (kbd "p") 'xah-wolfram-run-script-print-all)
+  (define-key xah-wolfram-leader-map (kbd "c") #'xah-wolfram-format-compact)
+  (define-key xah-wolfram-leader-map (kbd "d") #'xah-wolfram-smart-delete-backward)
 
-  (define-key xah-wolfram-leader-map (kbd "<return>") 'xah-wolfram-smart-newline))
+  (define-key xah-wolfram-leader-map (kbd "TAB") #'xah-wolfram-format-pretty)
+  (define-key xah-wolfram-leader-map (kbd "h") #'xah-wolfram-doc-lookup)
+  (define-key xah-wolfram-leader-map (kbd "r") #'xah-wolfram-run-script)
+  (define-key xah-wolfram-leader-map (kbd "t") #'xah-wolfram-replace-special-char)
+  (define-key xah-wolfram-leader-map (kbd "p") #'xah-wolfram-run-script-print-all)
+
+  (define-key xah-wolfram-leader-map (kbd "<return>") #'xah-wolfram-smart-newline))
 
 
 
