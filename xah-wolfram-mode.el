@@ -3,7 +3,7 @@
 ;; Copyright © 2021, 2024 by Xah Lee
 
 ;; Author: Xah Lee ( http://xahlee.info/ )
-;; Version: 2.6.20240228144516
+;; Version: 2.6.20240229102230
 ;; Created: 2021-07-24
 ;; Package-Requires: ((emacs "27"))
 ;; Keywords: languages, Wolfram Language, Mathematica
@@ -2597,9 +2597,9 @@ Version: 2021-08-01 2021-09-22 2023-07-31 2023-10-13"
        (point-min) (point-max)
        [
         ["  " " "]
-        [" [" "["]
-        ["[ " "["]
-        [" ]" "]"]
+        [" \\[" "["]
+        ["\\[ " "["]
+        [" \\]" "]"]
         [" =" "="]
         ["= " "="]
         [" &" "&"]
