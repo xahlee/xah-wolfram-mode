@@ -3,7 +3,7 @@
 ;; Copyright © 2021, 2024 by Xah Lee
 
 ;; Author: Xah Lee ( http://xahlee.info/ )
-;; Version: 2.6.20240229102230
+;; Version: 2.6.20240316085230
 ;; Created: 2021-07-24
 ;; Package-Requires: ((emacs "27"))
 ;; Keywords: languages, Wolfram Language, Mathematica
@@ -73,7 +73,7 @@ Version: 2023-02-12"
 Version: 2023-02-12"
   (if (region-active-p)
       (cons (region-beginning) (region-end))
-    (xah-get-bounds-of-block)))
+    (xah-wolfram-get-bounds-of-block)))
 
 (defun xah-wolfram-replace-regexp-pairs-region (Begin End Pairs &optional Fixedcase-p Literal-p Hilight-p)
   "Replace regex string find/replace Pairs in region.
@@ -2438,7 +2438,7 @@ Version: 2016-10-24"
     ("ra" "-> ▮" xah-wolfram--abhook)
     ("same" "=== " xah-wolfram--abhook)
     ("set" "= " xah-wolfram--abhook)
-    ("asso" "<|▮a -> 1, b -> 2|>" xah-wolfram--abhook)
+    ("at" "@ " xah-wolfram--abhook)
 
     ;; common abbrevs
 
@@ -2453,12 +2453,12 @@ Version: 2016-10-24"
 
     ;; odd abbrevs
 
-    ("at" "@ " xah-wolfram--abhook)
     ("1st" "First[▮]" xah-wolfram--abhook)
     ("last" "Last[▮]" xah-wolfram--abhook)
-    ("assoc" "Association" xah-wolfram--abhook)
+    ("asso" "Association" xah-wolfram--abhook)
     ("ff" "FullForm" xah-wolfram--abhook)
     ("fun" "Function" xah-wolfram--abhook)
+    ("get" "Get[▮]" xah-wolfram--abhook)
     ("g3d" "Graphics3D" xah-wolfram--abhook)
     ("gc" "GraphicsComplex[▮,]" xah-wolfram--abhook)
     ("gra" "Graphics" xah-wolfram--abhook)
@@ -2473,7 +2473,7 @@ Version: 2016-10-24"
 
     ;; function templates
 
-    ("Association" "Association[▮a -> 1, b -> 2]" xah-wolfram--abhook)
+    ("Association" "Association[▮ a -> 1, b -> 2]" xah-wolfram--abhook)
     ("Function" "Function[{x},▮expr]" xah-wolfram--abhook)
     ("GeometricTransformation" "GeometricTransformation[▮,tf]" xah-wolfram--abhook)
     ("Graphics" "Graphics[▮, Axes -> True ]" xah-wolfram--abhook)
