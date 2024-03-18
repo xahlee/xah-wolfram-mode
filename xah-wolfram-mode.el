@@ -3,7 +3,7 @@
 ;; Copyright © 2021, 2024 by Xah Lee
 
 ;; Author: Xah Lee ( http://xahlee.info/ )
-;; Version: 2.7.20240317210904
+;; Version: 2.8.20240317224440
 ;; Created: 2021-07-24
 ;; Package-Requires: ((emacs "27"))
 ;; Keywords: languages, Wolfram Language, Mathematica
@@ -101,9 +101,37 @@ Version: 2017-02-21 2021-08-14"
              (overlay-put (make-overlay (match-beginning 0) (match-end 0)) 'face 'highlight))))
        Pairs))))
 
+(defvar xah-wolfram-temp-dir-path nil "Path to temp dir used by xah commands.
+by default, the value is (concat user-emacs-directory \"temp/\").")
+
+(setq xah-wolfram-temp-dir-path (expand-file-name (concat user-emacs-directory "temp/")))
+
+(defun xah-wolfram-eval-current-line ()
+  "Execute the current line with WolframScript.
+
+Version: 2024-03-17"
+  (interactive)
+  (let ((xlinecode (buffer-substring-no-properties (line-beginning-position) (line-end-position)))
+        (xrandfilename
+         (concat
+          (if xah-wolfram-temp-dir-path
+              xah-wolfram-temp-dir-path
+            temporary-file-directory
+            )
+          (format "wolfram_%s_%x.wls" (format-time-string "%Y%m%d%-H%M%S") (random #xfffff))))
+        (xbuff "*Wolfram output*")
+        xcmdStr
+        )
+    (setq xcmdStr (format  "wolframscript -print all -file %s &" xrandfilename))
+    (with-temp-file xrandfilename
+      (insert xlinecode))
+    (message "Running 「%s」" xcmdStr)
+    (shell-command xcmdStr xbuff)
+    (display-buffer xbuff)))
+
 (defun xah-wolfram-run-script (&optional OptStr CurrentPrefixArg)
   "Execute the current file with WolframScript.
-The current file should have one of the filename extensions: wls wl m nb.
+The current file should have one of the filename extension: wl wls.
 
 When `universal-argument' is called first, prompt user to give WolframScript command line options. (「-file name」 is always used.)
 
@@ -2800,9 +2828,10 @@ Version: 2017-01-27 2023-02-12 2023-09-29"
 
   (define-key xah-wolfram-leader-map (kbd "TAB") #'xah-wolfram-format-pretty)
   (define-key xah-wolfram-leader-map (kbd "h") #'xah-wolfram-doc-lookup)
+  (define-key xah-wolfram-leader-map (kbd "l") #'xah-wolfram-eval-current-line)
+  (define-key xah-wolfram-leader-map (kbd "p") #'xah-wolfram-run-script-print-all)
   (define-key xah-wolfram-leader-map (kbd "r") #'xah-wolfram-run-script)
   (define-key xah-wolfram-leader-map (kbd "t") #'xah-wolfram-replace-special-char)
-  (define-key xah-wolfram-leader-map (kbd "p") #'xah-wolfram-run-script-print-all)
 
   (define-key xah-wolfram-leader-map (kbd "<return>") #'xah-wolfram-smart-newline))
 
