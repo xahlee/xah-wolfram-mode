@@ -3,7 +3,7 @@
 ;; Copyright © 2021, 2024 by Xah Lee
 
 ;; Author: Xah Lee ( http://xahlee.info/ )
-;; Version: 2.6.20240316085230
+;; Version: 2.7.20240317210904
 ;; Created: 2021-07-24
 ;; Package-Requires: ((emacs "27"))
 ;; Keywords: languages, Wolfram Language, Mathematica
@@ -108,7 +108,7 @@ The current file should have one of the filename extensions: wls wl m nb.
 When `universal-argument' is called first, prompt user to give WolframScript command line options. (「-file name」 is always used.)
 
 If the file is modified or not saved, save it automatically before run.
-Version: 2021-10-27 2023-12-06 2023-12-31"
+Version: 2021-10-27 2024-03-17"
   (interactive)
   (let (xpromptAnswer
         xoptionsStr xcmdStr
@@ -136,7 +136,7 @@ Version: 2021-10-27 2023-12-06 2023-12-31"
            ((string-equal xpromptAnswer "Other")
             (read-string "extra options:" ""))
            (t xpromptAnswer)))
-    (setq xcmdStr (format  "wolframscript -file %s %s" (shell-quote-argument buffer-file-name)  xoptionsStr))
+    (setq xcmdStr (format  "wolframscript -file %s %s &" (shell-quote-argument buffer-file-name) xoptionsStr))
     (message "Running 「%s」" xcmdStr)
     (shell-command xcmdStr xbuff)
     (display-buffer xbuff)))
