@@ -3,7 +3,7 @@
 ;; Copyright © 2021, 2024 by Xah Lee
 
 ;; Author: Xah Lee ( http://xahlee.info/ )
-;; Version: 2.9.20240321124130
+;; Version: 2.10.20240321220057
 ;; Created: 2021-07-24
 ;; Package-Requires: ((emacs "27"))
 ;; Keywords: languages, Wolfram Language, Mathematica
@@ -124,52 +124,43 @@ Version: 2024-03-17 2024-03-21"
   (interactive)
   (xah-wolfram-eval-region (line-beginning-position) (line-end-position)))
 
-(defun xah-wolfram-run-script (&optional OptStr CurrentPrefixArg)
+(defun xah-wolfram-run-script (Filepath &optional OptStr)
   "Execute the current file with WolframScript.
 The current file should have one of the filename extension: wl wls.
 
 When `universal-argument' is called first, prompt user to give WolframScript command line options. (「-file name」 is always used.)
 
-If the file is modified or not saved, save it automatically before run.
-Version: 2021-10-27 2024-03-17"
-  (interactive)
-  (let (xpromptAnswer
-        xoptionsStr xcmdStr
-        (xbuff "*Wolfram output*"))
-    (setq xpromptAnswer
-          (if OptStr
-              OptStr
-            (if (or CurrentPrefixArg current-prefix-arg)
-                (let ((completion-ignore-case t))
-                  (completing-read
-                   "WolframScript additional options:"
-                   '(
-                     "-print"
-                     "-print all"
-                     "Other"
-                     "None"
-                     ) nil t))
-              ""
-              )))
-    (if buffer-file-name nil (save-buffer))
-    (if (buffer-modified-p) (save-buffer) nil)
-    (setq xoptionsStr
-          (cond
-           ((string-equal xpromptAnswer "None") "")
-           ((string-equal xpromptAnswer "Other")
-            (read-string "extra options:" ""))
-           (t xpromptAnswer)))
-    (setq xcmdStr (format  "wolframscript -file %s %s &" (shell-quote-argument buffer-file-name) xoptionsStr))
+If the file is modified, save it automatically before run.
+Version: 2021-10-27 2024-03-17 2024-03-21"
+  (interactive
+   (let (xpromptAnswer)
+     (when (not buffer-file-name) (user-error "Buffer is not a file. Save it first"))
+     (when (buffer-modified-p) (save-buffer))
+     (setq xpromptAnswer
+           (if current-prefix-arg
+               (read-string "WolframScript additional options:")
+             nil
+             ))
+     (list buffer-file-name xpromptAnswer)))
+  (let (xcmdStr (xbuff "*Wolfram output*"))
+    (setq xcmdStr (format  "wolframscript -file %s %s &" (shell-quote-argument Filepath) OptStr))
     (message "Running 「%s」" xcmdStr)
     (shell-command xcmdStr xbuff)
     (display-buffer xbuff)))
 
-(defun xah-wolfram-run-script-print-all ()
-  "Execute the current file with WolframScript with option -print all.
-If the file is modified or not saved, save it automatically before run.
-Version: 2021-10-27"
+(defun xah-wolfram-run-script-print-last ()
+  "Run the current file with WolframScript, print last expression.
+calls `xah-wolfram-run-script'.
+Version: 2024-03-21"
   (interactive)
-  (xah-wolfram-run-script "-print all"))
+  (xah-wolfram-run-script buffer-file-name "-print"))
+
+(defun xah-wolfram-run-script-print-all ()
+  "Run the current file with WolframScript with option -print all.
+calls `xah-wolfram-run-script'.
+Version: 2021-10-27 2024-03-21"
+  (interactive)
+  (xah-wolfram-run-script buffer-file-name "-print all"))
 
 (defvar xah-wolfram-special-char
 '(
@@ -2462,6 +2453,7 @@ Version: 2016-10-24"
     ("same" "=== " xah-wolfram--abhook)
     ("set" "= " xah-wolfram--abhook)
     ("at" "@ " xah-wolfram--abhook)
+    ("var" "x = 3;" xah-wolfram--abhook)
 
     ;; common abbrevs
 
@@ -2822,10 +2814,11 @@ Version: 2017-01-27 2023-02-12 2023-09-29"
   (define-key xah-wolfram-leader-map (kbd "d") #'xah-wolfram-smart-delete-backward)
 
   (define-key xah-wolfram-leader-map (kbd "TAB") #'xah-wolfram-format-pretty)
+  (define-key xah-wolfram-leader-map (kbd "a") #'xah-wolfram-run-script-print-all)
+  (define-key xah-wolfram-leader-map (kbd "e") #'xah-wolfram-eval-region)
   (define-key xah-wolfram-leader-map (kbd "h") #'xah-wolfram-doc-lookup)
   (define-key xah-wolfram-leader-map (kbd "l") #'xah-wolfram-eval-current-line)
-  (define-key xah-wolfram-leader-map (kbd "e") #'xah-wolfram-eval-region)
-  (define-key xah-wolfram-leader-map (kbd "p") #'xah-wolfram-run-script-print-all)
+  (define-key xah-wolfram-leader-map (kbd "p") #'xah-wolfram-run-script-print-last)
   (define-key xah-wolfram-leader-map (kbd "r") #'xah-wolfram-run-script)
   (define-key xah-wolfram-leader-map (kbd "t") #'xah-wolfram-replace-special-char)
 
