@@ -3,7 +3,7 @@
 ;; Copyright © 2021, 2024 by Xah Lee
 
 ;; Author: Xah Lee ( http://xahlee.info/ )
-;; Version: 2.10.20240321220057
+;; Version: 2.11.20240324104511
 ;; Created: 2021-07-24
 ;; Package-Requires: ((emacs "27"))
 ;; Keywords: languages, Wolfram Language, Mathematica
@@ -45,9 +45,10 @@
 
 ;;; Code:
 
-(defun xah-wolfram-get-bounds-of-block ()
-  "Return the boundary (START . END) of current block.
-Version: 2023-02-12"
+(defun xah-get-pos-of-block ()
+  "Return the [begin end] positions of current text block.
+Return value is a vector.
+Version: 2024-03-23"
   (let (xp1 xp2 (xblankRegex "\n[ \t]*\n"))
     (save-excursion
       (setq xp1 (if (re-search-backward xblankRegex nil 1)
@@ -56,14 +57,15 @@ Version: 2023-02-12"
       (setq xp2 (if (re-search-forward xblankRegex nil 1)
                     (match-beginning 0)
                   (point))))
-    (cons xp1 xp2)))
+    (vector xp1 xp2)))
 
-(defun xah-wolfram-get-bounds-of-block-or-region ()
-  "If region is active, return its boundary, else same as `xah-get-bounds-of-block'.
-Version: 2023-02-12"
+(defun xah-get-pos-of-block-or ()
+  "If region is active, return its [begin end] positions, else same as `xah-get-pos-of-block'.
+Return value is a vector.
+Version: 2024-03-23"
   (if (region-active-p)
-      (cons (region-beginning) (region-end))
-    (xah-wolfram-get-bounds-of-block)))
+      (vector (region-beginning) (region-end))
+    (xah-get-pos-of-block)))
 
 (defun xah-wolfram-replace-regexp-pairs-region (Begin End Pairs &optional Fixedcase-p Literal-p Hilight-p)
   "Replace regex string find/replace Pairs in region.
@@ -108,15 +110,15 @@ Version: 2024-03-21"
             temporary-file-directory
             )
           (format "wolfram_%s_%x.wls" (format-time-string "%Y%m%d%-H%M%S") (random #xfffff))))
-        (xbuff "*Wolfram output*")
+        (xoutBuf "*Wolfram output*")
         xcmdStr
         )
     (setq xcmdStr (format  "wolframscript -print all -file %s &" xrandfilename))
     (with-temp-file xrandfilename
       (insert xcode))
     (message "Running 「%s」" xcmdStr)
-    (shell-command xcmdStr xbuff)
-    (display-buffer xbuff)))
+    (shell-command xcmdStr xoutBuf)
+    (display-buffer xoutBuf)))
 
 (defun xah-wolfram-eval-current-line ()
   "Eval the current line with WolframScript.
@@ -125,13 +127,13 @@ Version: 2024-03-17 2024-03-21"
   (xah-wolfram-eval-region (line-beginning-position) (line-end-position)))
 
 (defun xah-wolfram-run-script (Filepath &optional OptStr)
-  "Execute the current file with WolframScript.
+  "Execute the current file with WolframScript and print last expression.
 The current file should have one of the filename extension: wl wls.
 
 When `universal-argument' is called first, prompt user to give WolframScript command line options. (「-file name」 is always used.)
 
 If the file is modified, save it automatically before run.
-Version: 2021-10-27 2024-03-17 2024-03-21"
+Version: 2021-10-27 2024-03-21 2024-03-22"
   (interactive
    (let (xpromptAnswer)
      (when (not buffer-file-name) (user-error "Buffer is not a file. Save it first"))
@@ -142,11 +144,11 @@ Version: 2021-10-27 2024-03-17 2024-03-21"
              nil
              ))
      (list buffer-file-name xpromptAnswer)))
-  (let (xcmdStr (xbuff "*Wolfram output*"))
-    (setq xcmdStr (format  "wolframscript -file %s %s &" (shell-quote-argument Filepath) OptStr))
+  (let (xcmdStr (xoutBuf "*Wolfram output*"))
+    (setq xcmdStr (format  "wolframscript -print -file %s %s &" (shell-quote-argument Filepath) OptStr))
     (message "Running 「%s」" xcmdStr)
-    (shell-command xcmdStr xbuff)
-    (display-buffer xbuff)))
+    (shell-command xcmdStr xoutBuf)
+    (display-buffer xoutBuf)))
 
 (defun xah-wolfram-run-script-print-last ()
   "Run the current file with WolframScript, print last expression.
@@ -2596,11 +2598,10 @@ Version: 2024-02-07"
 
 (defun xah-wolfram-format-compact ()
   "Format current block in compact style.
-Version: 2021-08-01 2021-09-22 2023-07-31 2023-10-13"
+Version: 2021-08-01 2023-10-13 2024-03-24"
   (interactive)
   (let (xp1 xp2)
-    (let ((xbds (xah-wolfram-get-bounds-of-block-or-region)))
-      (setq xp1 (car xbds) xp2 (cdr xbds)))
+    (seq-setq (xp1 xp2) (xah-get-pos-of-block-or))
     (save-restriction
       (narrow-to-region xp1 xp2)
       (xah-wolfram-replace-regexp-pairs-region
@@ -2630,11 +2631,10 @@ Version: 2021-08-01 2021-09-22 2023-07-31 2023-10-13"
 
 (defun xah-wolfram-format-pretty ()
   "Format current block in readable style.
-Version: 2021-07-25 2023-07-31 2023-10-13"
+Version: 2021-07-25 2023-10-13 2024-03-24"
   (interactive)
   (let (xp1 xp2)
-    (let ((xbds (xah-wolfram-get-bounds-of-block-or-region)))
-      (setq xp1 (car xbds) xp2 (cdr xbds)))
+    (seq-setq (xp1 xp2) (xah-get-pos-of-block-or))
     (save-restriction
       (narrow-to-region xp1 xp2)
       (xah-wolfram-replace-regexp-pairs-region
@@ -2696,20 +2696,17 @@ Version: 2021-07-25 2023-07-31 2023-10-13"
 
 Version: 2017-01-27 2023-02-12 2023-09-29"
   (interactive)
-  (let ((xp0 (point)) xp1 xp2 xcurSym xresultSym)
+  (let ((xp0 (point)) xp1 xp2 xthisSym xresultSym)
     (save-excursion
       (skip-chars-backward "$A-Za-z0-9")
       (setq xp1 (point))
       (goto-char xp0)
       (skip-chars-forward "$A-Za-z0-9")
       (setq xp2 (point)))
-    (setq
-     xcurSym
-     (if (or (not xp1) (not xp2) (eq xp1 xp2))
-         ""
-       (buffer-substring-no-properties xp1 xp2))
-     xresultSym (completing-read "" xah-wolfram-all-symbols nil nil xcurSym))
+    (setq xthisSym (buffer-substring-no-properties xp1 xp2))
+    (setq xresultSym (completing-read "" xah-wolfram-all-symbols nil t xthisSym))
     (delete-region xp1 xp2)
+    (goto-char xp1)
     (insert xresultSym "[  ]")
     (backward-char 2)))
 
