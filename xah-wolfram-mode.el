@@ -3,7 +3,7 @@
 ;; Copyright © 2021, 2024 by Xah Lee
 
 ;; Author: Xah Lee ( http://xahlee.info/ )
-;; Version: 2.12.20240330192025
+;; Version: 2.12.20240331130517
 ;; Created: 2021-07-24
 ;; Package-Requires: ((emacs "27"))
 ;; Keywords: languages, Wolfram Language, Mathematica
@@ -2588,8 +2588,9 @@ Version: 2023-07-22 2023-08-02"
 Also replace
 \\[Infinity] → Infinity
 \\[Equal] → ==
+and few others.
 
-Version: 2024-02-07 2024-03-30"
+Version: 2024-02-07 2024-03-31"
   (interactive)
   (save-excursion
     (let (xp1 xp2)
@@ -2599,6 +2600,7 @@ Version: 2024-02-07 2024-03-30"
         (let ((case-fold-search nil))
           (progn (goto-char (point-min)) (while (search-forward "\\[Pi]" nil t) (replace-match "Pi")))
           (progn (goto-char (point-min)) (while (search-forward "\\[Infinity]" nil t) (replace-match "Infinity")))
+          (progn (goto-char (point-min)) (while (search-forward "\\[Rule]" nil t) (replace-match "->")))
           (progn (goto-char (point-min)) (while (search-forward "\\[Equal]" nil t) (replace-match "==")))
           ;;
           )))))
@@ -2766,6 +2768,7 @@ Version: 2017-01-27 2023-02-12 2023-09-29"
    (modify-syntax-entry ?` "." xsynTable)
    (modify-syntax-entry ?| "." xsynTable)
    (modify-syntax-entry ?~ "." xsynTable)
+   (modify-syntax-entry ?\\ "." xsynTable)
 
    xsynTable))
 
