@@ -3,7 +3,7 @@
 ;; Copyright © 2021, 2024 by Xah Lee
 
 ;; Author: Xah Lee ( http://xahlee.info/ )
-;; Version: 2.11.20240324104511
+;; Version: 2.12.20240330192025
 ;; Created: 2021-07-24
 ;; Package-Requires: ((emacs "27"))
 ;; Keywords: languages, Wolfram Language, Mathematica
@@ -67,7 +67,7 @@ Version: 2024-03-23"
       (vector (region-beginning) (region-end))
     (xah-get-pos-of-block)))
 
-(defun xah-wolfram-replace-regexp-pairs-region (Begin End Pairs &optional Fixedcase-p Literal-p Hilight-p)
+(defun xah-wolfram--replace-regexp-pairs (Begin End Pairs &optional Fixedcase-p Literal-p Hilight-p)
   "Replace regex string find/replace Pairs in region.
 
 Begin End are the region boundaries.
@@ -80,7 +80,7 @@ The optional arguments Fixedcase-p and Literal-p is the same as in `replace-matc
 If Hilight-p is true, highlight the changed region.
 
 Find strings case sensitivity depends on `case-fold-search'. You can set it locally, like this: (let ((case-fold-search nil)) …)
-Version: 2017-02-21 2021-08-14"
+Version: 2024-03-30"
   (save-excursion
     (save-restriction
       (narrow-to-region Begin End)
@@ -2583,33 +2583,41 @@ Version: 2023-07-22 2023-08-02"
       (xah-wolfram-complete-symbol))
      (t (xah-wolfram-format-pretty)))))
 
-(defun xah-wolfram-replace-special-char ()
+(defun xah-wolfram-replace-name-chars ()
   "Replace \\[Pi] by Pi in current text block.
-Version: 2024-02-07"
+Also replace
+\\[Infinity] → Infinity
+\\[Equal] → ==
+
+Version: 2024-02-07 2024-03-30"
   (interactive)
   (save-excursion
     (let (xp1 xp2)
-      (setq xp1 (if (search-backward "\n\n" nil t) (+ (point) 2) (point-min))
-            xp2 (if (search-forward "\n\n" nil t) (- (point) 2) (point-max)))
+      (seq-setq (xp1 xp2) (xah-get-pos-of-block-or))
       (save-restriction
         (narrow-to-region xp1 xp2)
         (let ((case-fold-search nil))
-          (goto-char (point-min)) (while (search-forward "\\[Pi]" nil t) (replace-match "Pi")))))))
+          (progn (goto-char (point-min)) (while (search-forward "\\[Pi]" nil t) (replace-match "Pi")))
+          (progn (goto-char (point-min)) (while (search-forward "\\[Infinity]" nil t) (replace-match "Infinity")))
+          (progn (goto-char (point-min)) (while (search-forward "\\[Equal]" nil t) (replace-match "==")))
+          ;;
+          )))))
 
 (defun xah-wolfram-format-compact ()
   "Format current block in compact style.
+xtodo: not very good. should call kernel to do this.
 Version: 2021-08-01 2023-10-13 2024-03-24"
   (interactive)
   (let (xp1 xp2)
     (seq-setq (xp1 xp2) (xah-get-pos-of-block-or))
     (save-restriction
       (narrow-to-region xp1 xp2)
-      (xah-wolfram-replace-regexp-pairs-region
+      (xah-wolfram--replace-regexp-pairs
        (point-min) (point-max)
        [
         ["\\([A-Za-z0-9]\\) @" "\\1@"]
         ] t nil t)
-      (xah-wolfram-replace-regexp-pairs-region
+      (xah-wolfram--replace-regexp-pairs
        (point-min) (point-max)
        [
         ["  " " "]
@@ -2631,13 +2639,14 @@ Version: 2021-08-01 2023-10-13 2024-03-24"
 
 (defun xah-wolfram-format-pretty ()
   "Format current block in readable style.
+xtodo: not very good. should call kernel to do this.
 Version: 2021-07-25 2023-10-13 2024-03-24"
   (interactive)
   (let (xp1 xp2)
     (seq-setq (xp1 xp2) (xah-get-pos-of-block-or))
     (save-restriction
       (narrow-to-region xp1 xp2)
-      (xah-wolfram-replace-regexp-pairs-region
+      (xah-wolfram--replace-regexp-pairs
        (point-min) (point-max)
        [
         ;; before comma
@@ -2680,7 +2689,7 @@ Version: 2021-07-25 2023-10-13 2024-03-24"
 
         ["\n;" ";"]
         ] t)
-      (xah-wolfram-replace-regexp-pairs-region
+      (xah-wolfram--replace-regexp-pairs
        (point-min) (point-max)
        [
         ;; [" := " ":="]
@@ -2817,7 +2826,7 @@ Version: 2017-01-27 2023-02-12 2023-09-29"
   (define-key xah-wolfram-leader-map (kbd "l") #'xah-wolfram-eval-current-line)
   (define-key xah-wolfram-leader-map (kbd "p") #'xah-wolfram-run-script-print-last)
   (define-key xah-wolfram-leader-map (kbd "r") #'xah-wolfram-run-script)
-  (define-key xah-wolfram-leader-map (kbd "t") #'xah-wolfram-replace-special-char)
+  (define-key xah-wolfram-leader-map (kbd "t") #'xah-wolfram-replace-name-chars)
 
   (define-key xah-wolfram-leader-map (kbd "<return>") #'xah-wolfram-smart-newline))
 
