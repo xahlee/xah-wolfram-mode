@@ -3,7 +3,7 @@
 ;; Copyright © 2021, 2024 by Xah Lee
 
 ;; Author: Xah Lee ( http://xahlee.info/ )
-;; Version: 2.12.20240331130517
+;; Version: 2.12.20240402191218
 ;; Created: 2021-07-24
 ;; Package-Requires: ((emacs "27"))
 ;; Keywords: languages, Wolfram Language, Mathematica
@@ -130,7 +130,7 @@ Version: 2024-03-17 2024-03-21"
   "Execute the current file with WolframScript and print last expression.
 The current file should have one of the filename extension: wl wls.
 
-When `universal-argument' is called first, prompt user to give WolframScript command line options. (「-file name」 is always used.)
+If `universal-argument' is called first, prompt user to give WolframScript command line options. (「-file name」 is always used.)
 
 If the file is modified, save it automatically before run.
 Version: 2021-10-27 2024-03-21 2024-03-22"
@@ -2297,7 +2297,7 @@ If cursor left is a bracket e.g. 「[▮some]▮」, delete whole bracketed text
 Else, just delete backward 1 char.
 Deleted text can be pasted later (except 1 char).
 
-When `universal-argument' is called first, do not delete the inner text.
+If `universal-argument' is called first, do not delete the inner text.
 
 Version: 2023-11-12 2023-12-12"
   (interactive)
@@ -2583,7 +2583,7 @@ Version: 2023-07-22 2023-08-02"
       (xah-wolfram-complete-symbol))
      (t (xah-wolfram-format-pretty)))))
 
-(defun xah-wolfram-replace-name-chars ()
+(defun xah-wolfram-replace-named-chars ()
   "Replace \\[Pi] by Pi in current text block.
 Also replace
 \\[Infinity] → Infinity
@@ -2602,6 +2602,7 @@ Version: 2024-02-07 2024-03-31"
           (progn (goto-char (point-min)) (while (search-forward "\\[Infinity]" nil t) (replace-match "Infinity")))
           (progn (goto-char (point-min)) (while (search-forward "\\[Rule]" nil t) (replace-match "->")))
           (progn (goto-char (point-min)) (while (search-forward "\\[Equal]" nil t) (replace-match "==")))
+          (progn (goto-char (point-min)) (while (search-forward "°" nil t) (replace-match "Degree")))
           ;;
           )))))
 
@@ -2829,7 +2830,7 @@ Version: 2017-01-27 2023-02-12 2023-09-29"
   (define-key xah-wolfram-leader-map (kbd "l") #'xah-wolfram-eval-current-line)
   (define-key xah-wolfram-leader-map (kbd "p") #'xah-wolfram-run-script-print-last)
   (define-key xah-wolfram-leader-map (kbd "r") #'xah-wolfram-run-script)
-  (define-key xah-wolfram-leader-map (kbd "t") #'xah-wolfram-replace-name-chars)
+  (define-key xah-wolfram-leader-map (kbd "t") #'xah-wolfram-replace-named-chars)
 
   (define-key xah-wolfram-leader-map (kbd "<return>") #'xah-wolfram-smart-newline))
 
