@@ -3,7 +3,7 @@
 ;; Copyright © 2021, 2024 by Xah Lee
 
 ;; Author: Xah Lee ( http://xahlee.info/ )
-;; Version: 2.12.20240402191218
+;; Version: 2.13.20240516133303
 ;; Created: 2021-07-24
 ;; Package-Requires: ((emacs "27"))
 ;; Keywords: languages, Wolfram Language, Mathematica
@@ -36,11 +36,11 @@
 
 ;;; Customization:
 ;;
-;; all keybinding for this mode are key sequences, starting with a leader key stored in this variable
-;; xah-major-mode-leader-key
+;; all keybinding for this mode are key sequences of single key press (no chord), starting with a leader key stored in this variable
+;; xah-major-leader-key
 ;; by default, it's TAB key.
 ;; you can change it by put this in your emacs init, before loading the mode
-;; (setq xah-major-mode-leader-key (kbd "<f6>"))
+;; (setq xah-major-leader-key "<f6>")
 
 
 ;;; Code:
@@ -93,9 +93,7 @@ Version: 2024-03-30"
              (overlay-put (make-overlay (match-beginning 0) (match-end 0)) 'face 'highlight))))
        Pairs))))
 
-(defvar xah-wolfram-temp-dir-path nil "Path to temp dir used by xah commands.
-by default, the value is (concat user-emacs-directory \"temp/\").")
-
+(defvar xah-wolfram-temp-dir-path nil "Path to temp dir used by xah commands. By default, the value is temp in `user-emacs-directory'.")
 (setq xah-wolfram-temp-dir-path (expand-file-name (concat user-emacs-directory "temp/")))
 
 (defun xah-wolfram-eval-region (Xbegin Xend)
@@ -122,7 +120,8 @@ Version: 2024-03-21"
 
 (defun xah-wolfram-eval-current-line ()
   "Eval the current line with WolframScript.
-Version: 2024-03-17 2024-03-21"
+Created: 2024-03-17
+Version: 2024-03-21"
   (interactive)
   (xah-wolfram-eval-region (line-beginning-position) (line-end-position)))
 
@@ -133,7 +132,8 @@ The current file should have one of the filename extension: wl wls.
 If `universal-argument' is called first, prompt user to give WolframScript command line options. (「-file name」 is always used.)
 
 If the file is modified, save it automatically before run.
-Version: 2021-10-27 2024-03-21 2024-03-22"
+Created: 2021-10-27
+Version: 2024-03-21 2024-03-22"
   (interactive
    (let (xpromptAnswer)
      (when (not buffer-file-name) (user-error "Buffer is not a file. Save it first"))
@@ -160,7 +160,8 @@ Version: 2024-03-21"
 (defun xah-wolfram-run-script-print-all ()
   "Run the current file with WolframScript with option -print all.
 calls `xah-wolfram-run-script'.
-Version: 2021-10-27 2024-03-21"
+Created: 2021-10-27
+Version: 2024-03-21"
   (interactive)
   (xah-wolfram-run-script buffer-file-name "-print all"))
 
@@ -2268,7 +2269,8 @@ Version: 2021-10-27 2024-03-21"
 
 (defun xah-wolfram-doc-lookup ()
   "Look up the symbol under cursor in Wolfram doc site in web browser.
-Version: 2021-07-25 2021-09-15 2021-09-20"
+Created: 2021-07-25
+Version: 2021-09-15 2021-09-20"
   (interactive)
   (let* ((xword
           (if (region-active-p)
@@ -2281,7 +2283,8 @@ Version: 2021-07-25 2021-09-15 2021-09-20"
   "Delete comment to the left of cursor.
 cursor must be at end of comment, like this
 (* comment *)▮
-Version: 2023-11-12 2023-12-12"
+Created: 2023-11-12
+Version: 2023-12-12"
   (interactive)
   (let ((xp0 (point)))
     ;; 41 is right paren, 42 is asterisk
@@ -2299,7 +2302,8 @@ Deleted text can be pasted later (except 1 char).
 
 If `universal-argument' is called first, do not delete the inner text.
 
-Version: 2023-11-12 2023-12-12"
+Created: 2023-11-12
+Version: 2023-12-12"
   (interactive)
   (let ((xp0 (point)))
     (cond
@@ -2383,59 +2387,21 @@ Version: 2021-08-06"
 
 ;; abbrev
 
+(defun xah-wolfram--abhook ()
+  "Abbrev hook function, used for `define-abbrev'.
+Created: 2016-10-24
+Version: 2024-05-15"
+  (when (search-backward "▮" (max (point-min) (- (point) 200)) t) (delete-char 1))
+t)
+
+(put 'xah-wolfram--abhook 'no-self-insert t)
+
 (defun xah-wolfram-abbrev-enable-function ()
   "Return t if not in string or comment. Else nil.
 This is for abbrev table property `:enable-function'.
 Version: 2021-07-24"
   (let ((xsyntaxState (syntax-ppss)))
     (not (or (nth 3 xsyntaxState) (nth 4 xsyntaxState)))))
-
-(defun xah-wolfram-expand-abbrev ()
-  "Function for value of variable `abbrev-expand-function'.
-Expand the symbol before cursor, if cursor is not in string or comment.
-Returns the abbrev symbol if there's a expansion, else nil.
-Version: 2021-07-24"
-  (interactive)
-  (when (xah-wolfram-abbrev-enable-function) ; abbrev property :enable-function doesn't seem to work, so check here instead
-    (let ( xp1 xp2 xabrStr xabrSymbol )
-      ;; (save-excursion
-      ;;   (forward-symbol -1)
-      ;;   (setq xp1 (point))
-      ;;   (goto-char xp0)
-      ;;   (setq xp2 xp0))
-      (save-excursion
-        ;; 2017-01-16 note: we select the whole symbol to solve a problem. problem is: if “aa”  is a abbrev, and “▮bbcc” is existing word with cursor at beginning, and user wants to type aa-bbcc. Normally, aa immediately expands. This prevent people editing bbcc to become aa-bbcc. This happens for example in elisp “search-forward” to get “re-search-forward”. The downside of this is that, people cannot type a abbrev when in middle of a word.
-        (forward-symbol -1)
-        (setq xp1 (point))
-        (forward-symbol 1)
-        (setq xp2 (point)))
-      (setq xabrStr (buffer-substring-no-properties xp1 xp2)
-            xabrSymbol (abbrev-symbol xabrStr))
-      (if xabrSymbol
-          (progn
-            (abbrev-insert xabrSymbol xabrStr xp1 xp2 )
-            (xah-wolfram--abbrev-position-cursor xp1)
-            xabrSymbol)
-        nil))))
-
-(defun xah-wolfram--abbrev-position-cursor (&optional Pos)
-  "Move cursor back to ▮ if exist.
-Pos is a buffer position limit of search backward. If nil, default to point minus 100.
-Return point if found, else nil.
-Version: 2016-10-24 2023-08-20"
-  (interactive)
-  (let ((xfoundQ (search-backward "▮" (if Pos Pos (max (point-min) (- (point) 100))) t )))
-    (when xfoundQ (delete-char 1))
-    xfoundQ
-    ))
-
-(defun xah-wolfram--abhook ()
-  "Abbrev hook function, used for `define-abbrev'.
- Our use is to prevent inserting the char that triggered expansion. Experimental.
-Version: 2016-10-24"
-  t)
-
-(put 'xah-wolfram--abhook 'no-self-insert t)
 
 (defvar xah-wolfram-mode-abbrev-table nil "abbrev table" )
 
@@ -2569,7 +2535,8 @@ If cursor is in string or comment, do prettify.
 If char before cursor is a word, do completion, else do prettify.
 Prettify is done by `xah-wolfram-format-pretty'.
 
-Version: 2023-07-22 2023-08-02"
+Created: 2023-07-22
+Version: 2023-08-02"
   (interactive)
   (let ((xsyntaxState (syntax-ppss)))
     (cond
@@ -2590,7 +2557,8 @@ Also replace
 \\[Equal] → ==
 and few others.
 
-Version: 2024-02-07 2024-03-31"
+Created: 2024-02-07
+Version: 2024-03-31"
   (interactive)
   (save-excursion
     (let (xp1 xp2)
@@ -2609,7 +2577,8 @@ Version: 2024-02-07 2024-03-31"
 (defun xah-wolfram-format-compact ()
   "Format current block in compact style.
 xtodo: not very good. should call kernel to do this.
-Version: 2021-08-01 2023-10-13 2024-03-24"
+Created: 2021-08-01
+Version: 2023-10-13 2024-03-24"
   (interactive)
   (let (xp1 xp2)
     (seq-setq (xp1 xp2) (xah-get-pos-of-block-or))
@@ -2643,7 +2612,8 @@ Version: 2021-08-01 2023-10-13 2024-03-24"
 (defun xah-wolfram-format-pretty ()
   "Format current block in readable style.
 xtodo: not very good. should call kernel to do this.
-Version: 2021-07-25 2023-10-13 2024-03-24"
+Created: 2021-07-25
+Version: 2023-10-13 2024-03-24"
   (interactive)
   (let (xp1 xp2)
     (seq-setq (xp1 xp2) (xah-get-pos-of-block-or))
@@ -2706,7 +2676,8 @@ Version: 2021-07-25 2023-10-13 2024-03-24"
 (defun xah-wolfram-complete-symbol ()
   "Perform keyword completion on current symbol.
 
-Version: 2017-01-27 2023-02-12 2023-09-29"
+Created: 2017-01-27
+Version: 2023-02-12 2023-09-29"
   (interactive)
   (let ((xp0 (point)) xp1 xp2 xthisSym xresultSym)
     (save-excursion
@@ -2812,9 +2783,7 @@ Version: 2017-01-27 2023-02-12 2023-09-29"
   (define-prefix-command 'xah-wolfram-leader-map)
 
   (define-key xah-wolfram-mode-map
-              (if (boundp 'xah-major-mode-leader-key)
-                  xah-major-mode-leader-key
-                (kbd "TAB"))
+              (kbd (or xah-major-leader-key "TAB"))
               xah-wolfram-leader-map)
 
   ;; (define-key xah-wolfram-leader-map (kbd "SPC") #'xah-wolfram-complete-or-indent)
@@ -2845,9 +2814,6 @@ Version: 2017-01-27 2023-02-12 2023-09-29"
 
   (setq-local comment-start "(*")
   (setq-local comment-end "*)")
-
-  (make-local-variable 'abbrev-expand-function)
-  (setq abbrev-expand-function 'xah-wolfram-expand-abbrev)
 
   ;; (add-hook 'completion-at-point-functions #'xah-wolfram-complete-symbol nil 'local)
 
