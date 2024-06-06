@@ -3,7 +3,7 @@
 ;; Copyright © 2021, 2024 by Xah Lee
 
 ;; Author: Xah Lee ( http://xahlee.info/ )
-;; Version: 2.13.20240516133303
+;; Version: 2.14.20240605205517
 ;; Created: 2021-07-24
 ;; Package-Requires: ((emacs "27"))
 ;; Keywords: languages, Wolfram Language, Mathematica
@@ -42,12 +42,12 @@
 ;; you can change it by put this in your emacs init, before loading the mode
 ;; (setq xah-major-leader-key "<f6>")
 
-
+;; HHHH---------------------------------------------------
 ;;; Code:
 
 (defun xah-get-pos-of-block ()
   "Return the [begin end] positions of current text block.
-Return value is a vector.
+Return value is a `vector'.
 Version: 2024-03-23"
   (let (xp1 xp2 (xblankRegex "\n[ \t]*\n"))
     (save-excursion
@@ -61,7 +61,7 @@ Version: 2024-03-23"
 
 (defun xah-get-pos-of-block-or ()
   "If region is active, return its [begin end] positions, else same as `xah-get-pos-of-block'.
-Return value is a vector.
+Return value is a `vector'.
 Version: 2024-03-23"
   (if (region-active-p)
       (vector (region-beginning) (region-end))
@@ -95,6 +95,10 @@ Version: 2024-03-30"
 
 (defvar xah-wolfram-temp-dir-path nil "Path to temp dir used by xah commands. By default, the value is temp in `user-emacs-directory'.")
 (setq xah-wolfram-temp-dir-path (expand-file-name (concat user-emacs-directory "temp/")))
+
+;; (defvar xah-wolfram-script-path nil "Path to wolframscript command line. can be just wolframscript or a full path.")
+;; (setq xah-wolfram-script-path "c:/Program Files/Wolfram Research/Wolfram Desktop/14.0/wolframscript.exe")
+;; (setq xah-wolfram-script-path "wolframscript")
 
 (defun xah-wolfram-eval-region (Xbegin Xend)
   "Eval code in text selection with WolframScript.
@@ -133,7 +137,7 @@ If `universal-argument' is called first, prompt user to give WolframScript comma
 
 If the file is modified, save it automatically before run.
 Created: 2021-10-27
-Version: 2024-03-21 2024-03-22"
+Version: 2024-03-22"
   (interactive
    (let (xpromptAnswer)
      (when (not buffer-file-name) (user-error "Buffer is not a file. Save it first"))
@@ -2265,12 +2269,12 @@ Version: 2024-03-21"
        xah-wolfram-dollar-names
        ))
 
-
+;; HHHH---------------------------------------------------
 
 (defun xah-wolfram-doc-lookup ()
   "Look up the symbol under cursor in Wolfram doc site in web browser.
 Created: 2021-07-25
-Version: 2021-09-15 2021-09-20"
+Version: 2021-09-20"
   (interactive)
   (let* ((xword
           (if (region-active-p)
@@ -2294,19 +2298,28 @@ Version: 2023-12-12"
 
 (defun xah-wolfram-smart-delete-backward ()
   "Delete a thing to the left of cursor.
+
+If region is active, delete region text.
+If cursor left is whitespace, delete them.
 If cursor left is comment bracket e.g. 「(▮* comment *)▮」, delete whole comment.
 If cursor left is a string e.g. 「\"▮some\"▮」, delete whole string.
 If cursor left is a bracket e.g. 「[▮some]▮」, delete whole bracketed text.
 Else, just delete backward 1 char.
 Deleted text can be pasted later (except 1 char).
 
-If `universal-argument' is called first, do not delete the inner text.
+If `universal-argument' is called first, do not delete the bracketed inner text.
 
 Created: 2023-11-12
-Version: 2023-12-12"
+Version: 2024-06-05"
   (interactive)
   (let ((xp0 (point)))
     (cond
+     ((region-active-p) (delete-region (region-beginning) (region-end)))
+     ;; 32 is space, 9 is tab, 10 is linefeed
+     ((eq (char-before) 32) (while (eq (char-before) 32) (delete-char -1)))
+     ((eq (char-before) 9) (while (eq (char-before) 9) (delete-char -1)))
+     ((eq (char-before) 10) (while (eq (char-before) 10) (delete-char -1)))
+
      ;; inside comment
      ((nth 4 (syntax-ppss)) (delete-char -1))
 
@@ -2384,7 +2397,7 @@ Version: 2021-08-06"
   (interactive)
   (insert ";\n"))
 
-
+;; HHHH---------------------------------------------------
 ;; abbrev
 
 (defun xah-wolfram--abhook ()
@@ -2396,7 +2409,7 @@ t)
 
 (put 'xah-wolfram--abhook 'no-self-insert t)
 
-(defun xah-wolfram-abbrev-enable-function ()
+(defun xah-wolfram--abb-enable-f ()
   "Return t if not in string or comment. Else nil.
 This is for abbrev table property `:enable-function'.
 Version: 2021-07-24"
@@ -2478,7 +2491,7 @@ Version: 2021-07-24"
   "Abbrev table for `xah-wolfram-mode'"
   :case-fixed t
   :system t
-  :enable-function 'xah-wolfram-abbrev-enable-function
+  :enable-function 'xah-wolfram--abb-enable-f
   )
 
 ;; generate abbrev. simple lowercase to cap
@@ -2510,6 +2523,8 @@ Version: 2021-07-24"
 
    "true"
    "false"
+   "degree"
+   "frame"
 
    ))
 
@@ -2526,7 +2541,7 @@ Version: 2021-07-24"
    "ArcTan"
    ))
 
-
+;; HHHH---------------------------------------------------
 ;; indent/reformat related
 
 (defun xah-wolfram-complete-or-indent ()
@@ -2578,7 +2593,7 @@ Version: 2024-03-31"
   "Format current block in compact style.
 xtodo: not very good. should call kernel to do this.
 Created: 2021-08-01
-Version: 2023-10-13 2024-03-24"
+Version: 2024-03-24"
   (interactive)
   (let (xp1 xp2)
     (seq-setq (xp1 xp2) (xah-get-pos-of-block-or))
@@ -2613,7 +2628,7 @@ Version: 2023-10-13 2024-03-24"
   "Format current block in readable style.
 xtodo: not very good. should call kernel to do this.
 Created: 2021-07-25
-Version: 2023-10-13 2024-03-24"
+Version: 2024-03-24"
   (interactive)
   (let (xp1 xp2)
     (seq-setq (xp1 xp2) (xah-get-pos-of-block-or))
@@ -2670,14 +2685,14 @@ Version: 2023-10-13 2024-03-24"
         ["\n\n\n+" "\n\n"]
         ]))))
 
-
+;; HHHH---------------------------------------------------
 ;; completion
 
 (defun xah-wolfram-complete-symbol ()
   "Perform keyword completion on current symbol.
 
 Created: 2017-01-27
-Version: 2023-02-12 2023-09-29"
+Version: 2023-09-29"
   (interactive)
   (let ((xp0 (point)) xp1 xp2 xthisSym xresultSym)
     (save-excursion
@@ -2693,8 +2708,9 @@ Version: 2023-02-12 2023-09-29"
     (insert xresultSym "[  ]")
     (backward-char 2)))
 
-
+;; HHHH---------------------------------------------------
 ;; syntax table
+
 (defvar xah-wolfram-mode-syntax-table nil "Syntax table for `xah-wolfram-mode'.")
 
 (setq
@@ -2744,7 +2760,7 @@ Version: 2023-02-12 2023-09-29"
 
    xsynTable))
 
-
+;; HHHH---------------------------------------------------
 ;; syntax coloring related
 
 (defface xah-wolfram-var-name
@@ -2774,7 +2790,7 @@ Version: 2023-02-12 2023-09-29"
    ("\\b[a-z][A-Za-z0-9]*" . font-lock-variable-name-face)
    ("\\b[A-Z][A-Za-z0-9]*" . font-lock-warning-face)))
 
-
+;; HHHH---------------------------------------------------
 ;; keybinding
 
 (defvar xah-wolfram-mode-map nil "Keybinding for `xah-wolfram-mode'")
@@ -2803,24 +2819,18 @@ Version: 2023-02-12 2023-09-29"
 
   (define-key xah-wolfram-leader-map (kbd "<return>") #'xah-wolfram-smart-newline))
 
-
+;; HHHH---------------------------------------------------
 
 ;;;###autoload
-(define-derived-mode xah-wolfram-mode prog-mode "∑Wolfram"
+(define-derived-mode xah-wolfram-mode prog-mode "xah-wolfram"
   "A major mode for Wolfram Language.
 \\{xah-wolfram-mode-map}"
-  (set-syntax-table xah-wolfram-mode-syntax-table)
+  :abbrev-table xah-wolfram-mode-abbrev-table
+  :syntax-table xah-wolfram-mode-syntax-table
   (setq font-lock-defaults '((xah-wolfram-font-lock-keywords)))
-
   (setq-local comment-start "(*")
   (setq-local comment-end "*)")
-
-  ;; (add-hook 'completion-at-point-functions #'xah-wolfram-complete-symbol nil 'local)
-
-  (abbrev-mode 1)
-
-  :group 'xah-wolfram-mode
-  )
+  (abbrev-mode 1))
 
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.wl\\'" . xah-wolfram-mode))
