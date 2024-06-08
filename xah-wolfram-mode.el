@@ -3,7 +3,7 @@
 ;; Copyright © 2021, 2024 by Xah Lee
 
 ;; Author: Xah Lee ( http://xahlee.info/ )
-;; Version: 2.14.20240605205517
+;; Version: 2.15.20240608142623
 ;; Created: 2021-07-24
 ;; Package-Requires: ((emacs "27"))
 ;; Keywords: languages, Wolfram Language, Mathematica
@@ -170,130 +170,232 @@ Version: 2024-03-21"
   (xah-wolfram-run-script buffer-file-name "-print all"))
 
 (defvar xah-wolfram-special-char
-'(
-
-"\\[FormalA]"
-"\\[FormalB]"
-"\\[FormalC]"
-"\\[FormalD]"
-"\\[FormalE]"
-"\\[FormalF]"
-"\\[FormalG]"
-"\\[FormalH]"
-"\\[FormalI]"
-"\\[FormalJ]"
-"\\[FormalK]"
-"\\[FormalL]"
-"\\[FormalM]"
-"\\[FormalN]"
-"\\[FormalO]"
-"\\[FormalP]"
-"\\[FormalQ]"
-"\\[FormalR]"
-"\\[FormalS]"
-"\\[FormalT]"
-"\\[FormalU]"
-"\\[FormalV]"
-"\\[FormalW]"
-"\\[FormalX]"
-"\\[FormalY]"
-"\\[FormalZ]"
-
-"\\[FormalCapitalA]"
-"\\[FormalCapitalB]"
-"\\[FormalCapitalC]"
-"\\[FormalCapitalD]"
-"\\[FormalCapitalE]"
-"\\[FormalCapitalF]"
-"\\[FormalCapitalG]"
-"\\[FormalCapitalH]"
-"\\[FormalCapitalI]"
-"\\[FormalCapitalJ]"
-"\\[FormalCapitalK]"
-"\\[FormalCapitalL]"
-"\\[FormalCapitalM]"
-"\\[FormalCapitalN]"
-"\\[FormalCapitalO]"
-"\\[FormalCapitalP]"
-"\\[FormalCapitalQ]"
-"\\[FormalCapitalR]"
-"\\[FormalCapitalS]"
-"\\[FormalCapitalT]"
-"\\[FormalCapitalU]"
-"\\[FormalCapitalV]"
-"\\[FormalCapitalW]"
-"\\[FormalCapitalX]"
-"\\[FormalCapitalY]"
-"\\[FormalCapitalZ]"
-
-"\\[FormalCapitalAlpha]"
-"\\[FormalCapitalBeta]"
-"\\[FormalCapitalGamma]"
-"\\[FormalCapitalDelta]"
-"\\[FormalCapitalEpsilon]"
-"\\[FormalCapitalZeta]"
-"\\[FormalCapitalEta]"
-"\\[FormalCapitalTheta]"
-"\\[FormalCapitalIota]"
-"\\[FormalCapitalKappa]"
-"\\[FormalCapitalLambda]"
-"\\[FormalCapitalMu]"
-"\\[FormalCapitalNu]"
-"\\[FormalCapitalXi]"
-"\\[FormalCapitalOmicron]"
-"\\[FormalCapitalPi]"
-"\\[FormalCapitalRho]"
-"\\[FormalCapitalSigma]"
-"\\[FormalCapitalTau]"
-"\\[FormalCapitalUpsilon]"
-"\\[FormalCapitalPhi]"
-"\\[FormalCapitalChi]"
-"\\[FormalCapitalPsi]"
-"\\[FormalCapitalOmega]"
-
-"\\[FormalAlpha]"
-"\\[FormalBeta]"
-"\\[FormalGamma]"
-"\\[FormalDelta]"
-"\\[FormalCurlyEpsilon]"
-"\\[FormalZeta]"
-"\\[FormalEta]"
-"\\[FormalTheta]"
-"\\[FormalIota]"
-"\\[FormalKappa]"
-"\\[FormalLambda]"
-"\\[FormalMu]"
-"\\[FormalNu]"
-"\\[FormalXi]"
-"\\[FormalOmicron]"
-"\\[FormalPi]"
-"\\[FormalRho]"
-"\\[FormalFinalSigma]"
-"\\[FormalSigma]"
-"\\[FormalTau]"
-"\\[FormalUpsilon]"
-"\\[FormalCurlyPhi]"
-"\\[FormalChi]"
-"\\[FormalPsi]"
-"\\[FormalOmega]"
-"\\[FormalCurlyTheta]"
-"\\[FormalCurlyCapitalUpsilon]"
-"\\[FormalPhi]"
-"\\[FormalCurlyPi]"
-"\\[FormalCapitalStigma]"
-"\\[FormalStigma]"
-"\\[FormalCapitalDigamma]"
-"\\[FormalDigamma]"
-"\\[FormalCapitalKoppa]"
-"\\[FormalKoppa]"
-"\\[FormalCapitalSampi]"
-"\\[FormalSampi]"
-"\\[FormalCurlyKappa]"
-"\\[FormalCurlyRho]"
-"\\[FormalEpsilon]"
-
-)
+nil
  "List of Wolfram Language named characters.")
+
+;; Select[xx, ((ValueQ[#, Method -> "SymbolDefinitionsPresent"]) &)]
+
+(setq
+ xah-wolfram-special-char
+ '(
+
+"AAcute" "ABar" "ACup" "ADoubleDot" "AE" "AGrave" "AHat" "ARing" "ATilde"
+"Aleph" "AliasDelimiter" "AliasIndicator" "AlignmentMarker" "Alpha"
+"AltKey" "And" "Angle" "Angstrom" "AquariusSign" "AriesSign" "AscendingEllipsis"
+"AutoLeftMatch" "AutoOperand" "AutoPlaceholder" "AutoRightMatch" "AutoSpace"
+"Backslash" "BeamedEighthNote" "BeamedSixteenthNote" "Because" "Bet"
+"Beta" "BlackBishop" "BlackKing" "BlackKnight" "BlackPawn" "BlackQueen"
+"BlackRook" "Breve" "Bullet" "CAcute" "CCedilla" "CHacek" "CancerSign"
+"Cap" "CapitalAAcute" "CapitalABar" "CapitalACup" "CapitalADoubleDot"
+"CapitalAE" "CapitalAGrave" "CapitalAHat" "CapitalARing" "CapitalATilde"
+"CapitalAlpha" "CapitalBeta" "CapitalCAcute" "CapitalCCedilla" "CapitalCHacek"
+"CapitalChi" "CapitalDHacek" "CapitalDelta" "CapitalDifferentialD"
+"CapitalDigamma" "CapitalEAcute" "CapitalEBar" "CapitalECup" "CapitalEDoubleDot"
+"CapitalEGrave" "CapitalEHacek" "CapitalEHat" "CapitalEpsilon" "CapitalEta"
+"CapitalEth" "CapitalGamma" "CapitalIAcute" "CapitalICup" "CapitalIDoubleDot"
+"CapitalIGrave" "CapitalIHat" "CapitalIota" "CapitalKappa" "CapitalKoppa"
+"CapitalLSlash" "CapitalLambda" "CapitalMu" "CapitalNHacek" "CapitalNTilde"
+"CapitalNu" "CapitalOAcute" "CapitalODoubleAcute" "CapitalODoubleDot"
+"CapitalOE" "CapitalOGrave" "CapitalOHat" "CapitalOSlash" "CapitalOTilde"
+"CapitalOmega" "CapitalOmicron" "CapitalPhi" "CapitalPi" "CapitalPsi"
+"CapitalRHacek" "CapitalRho" "CapitalSHacek" "CapitalSampi" "CapitalSigma"
+"CapitalStigma" "CapitalTHacek" "CapitalTau" "CapitalTheta" "CapitalThorn"
+"CapitalUAcute" "CapitalUDoubleAcute" "CapitalUDoubleDot" "CapitalUGrave"
+"CapitalUHat" "CapitalURing" "CapitalUpsilon" "CapitalXi" "CapitalYAcute"
+"CapitalZHacek" "CapitalZeta" "CapricornSign" "Cedilla" "Cent" "CenterDot"
+"CenterEllipsis" "CheckedBox" "Checkmark" "Chi" "CircleDot" "CircleMinus"
+"CirclePlus" "CircleTimes" "ClockwiseContourIntegral" "CloseCurlyDoubleQuote"
+"CloseCurlyQuote" "CloverLeaf" "ClubSuit" "Colon" "CommandKey" "Conditioned"
+"Congruent" "Conjugate" "ConjugateTranspose" "ConstantC" "Continuation"
+"ContourIntegral" "ControlKey" "Coproduct" "Copyright" "CounterClockwiseContourIntegral"
+"Cross" "Cup" "CupCap" "CurlyCapitalUpsilon" "CurlyEpsilon" "CurlyKappa"
+"CurlyPhi" "CurlyPi" "CurlyRho" "CurlyTheta" "Currency" "DHacek" "Dagger"
+"Dalet" "Dash" "Degree" "Del" "DeleteKey" "Delta" "DescendingEllipsis"
+"Diameter" "Diamond" "DiamondSuit" "DifferenceDelta" "DifferentialD"
+"Digamma" "DirectedEdge" "DiscreteRatio" "DiscreteShift" "DiscretionaryHyphen"
+"DiscretionaryLineSeparator" "DiscretionaryPageBreakAbove" "DiscretionaryPageBreakBelow"
+"DiscretionaryParagraphSeparator" "Distributed" "Divide" "Divides"
+"DotEqual" "DotlessI" "DotlessJ" "DottedSquare" "DoubleContourIntegral"
+"DoubleDagger" "DoubleDot" "DoubleDownArrow" "DoubleLeftArrow" "DoubleLeftRightArrow"
+"DoubleLeftTee" "DoubleLongLeftArrow" "DoubleLongLeftRightArrow" "DoubleLongRightArrow"
+"DoublePrime" "DoubleRightArrow" "DoubleRightTee" "DoubleStruckA" "DoubleStruckB"
+"DoubleStruckC" "DoubleStruckCapitalA" "DoubleStruckCapitalB" "DoubleStruckCapitalC"
+"DoubleStruckCapitalD" "DoubleStruckCapitalE" "DoubleStruckCapitalF"
+"DoubleStruckCapitalG" "DoubleStruckCapitalH" "DoubleStruckCapitalI"
+"DoubleStruckCapitalJ" "DoubleStruckCapitalK" "DoubleStruckCapitalL"
+"DoubleStruckCapitalM" "DoubleStruckCapitalN" "DoubleStruckCapitalO"
+"DoubleStruckCapitalP" "DoubleStruckCapitalQ" "DoubleStruckCapitalR"
+"DoubleStruckCapitalS" "DoubleStruckCapitalT" "DoubleStruckCapitalU"
+"DoubleStruckCapitalV" "DoubleStruckCapitalW" "DoubleStruckCapitalX"
+"DoubleStruckCapitalY" "DoubleStruckCapitalZ" "DoubleStruckD" "DoubleStruckE"
+"DoubleStruckEight" "DoubleStruckF" "DoubleStruckFive" "DoubleStruckFour"
+"DoubleStruckG" "DoubleStruckH" "DoubleStruckI" "DoubleStruckJ" "DoubleStruckK"
+"DoubleStruckL" "DoubleStruckM" "DoubleStruckN" "DoubleStruckNine"
+"DoubleStruckO" "DoubleStruckOne" "DoubleStruckP" "DoubleStruckQ" "DoubleStruckR"
+"DoubleStruckS" "DoubleStruckSeven" "DoubleStruckSix" "DoubleStruckT"
+"DoubleStruckThree" "DoubleStruckTwo" "DoubleStruckU" "DoubleStruckV"
+"DoubleStruckW" "DoubleStruckX" "DoubleStruckY" "DoubleStruckZ" "DoubleStruckZero"
+"DoubleUpArrow" "DoubleUpDownArrow" "DoubleVerticalBar" "DoubledGamma"
+"DoubledPi" "DownArrow" "DownArrowBar" "DownArrowUpArrow" "DownBreve"
+"DownExclamation" "DownLeftRightVector" "DownLeftTeeVector" "DownLeftVector"
+"DownLeftVectorBar" "DownPointer" "DownQuestion" "DownRightTeeVector"
+"DownRightVector" "DownRightVectorBar" "DownTee" "DownTeeArrow" "EAcute"
+"EBar" "ECup" "EDoubleDot" "EGrave" "EHacek" "EHat" "Earth" "EighthNote"
+"Element" "Ellipsis" "EmptyCircle" "EmptyDiamond" "EmptyDownTriangle"
+"EmptyRectangle" "EmptySet" "EmptySmallCircle" "EmptySmallSquare" "EmptySquare"
+"EmptyUpTriangle" "EmptyVerySmallSquare" "EnterKey" "EntityEnd" "EntityStart"
+"Epsilon" "Equal" "EqualTilde" "Equilibrium" "Equivalent" "ErrorIndicator"
+"EscapeKey" "Eta" "Eth" "Euro" "Exists" "ExponentialE" "FiLigature"
+"FilledCircle" "FilledDiamond" "FilledDownTriangle" "FilledLeftTriangle"
+"FilledRectangle" "FilledRightTriangle" "FilledSmallCircle" "FilledSmallSquare"
+"FilledSquare" "FilledUpTriangle" "FilledVerySmallSquare" "FinalSigma"
+"FirstPage" "FivePointedStar" "FlLigature" "Flat" "Florin" "ForAll"
+"FormalA" "FormalAlpha" "FormalB" "FormalBeta" "FormalC" "FormalCapitalA"
+"FormalCapitalAlpha" "FormalCapitalB" "FormalCapitalBeta" "FormalCapitalC"
+"FormalCapitalChi" "FormalCapitalD" "FormalCapitalDelta" "FormalCapitalDigamma"
+"FormalCapitalE" "FormalCapitalEpsilon" "FormalCapitalEta" "FormalCapitalF"
+"FormalCapitalG" "FormalCapitalGamma" "FormalCapitalH" "FormalCapitalI"
+"FormalCapitalIota" "FormalCapitalJ" "FormalCapitalK" "FormalCapitalKappa"
+"FormalCapitalKoppa" "FormalCapitalL" "FormalCapitalLambda" "FormalCapitalM"
+"FormalCapitalMu" "FormalCapitalN" "FormalCapitalNu" "FormalCapitalO"
+"FormalCapitalOmega" "FormalCapitalOmicron" "FormalCapitalP" "FormalCapitalPhi"
+"FormalCapitalPi" "FormalCapitalPsi" "FormalCapitalQ" "FormalCapitalR"
+"FormalCapitalRho" "FormalCapitalS" "FormalCapitalSampi" "FormalCapitalSigma"
+"FormalCapitalStigma" "FormalCapitalT" "FormalCapitalTau" "FormalCapitalTheta"
+"FormalCapitalU" "FormalCapitalUpsilon" "FormalCapitalV" "FormalCapitalW"
+"FormalCapitalX" "FormalCapitalXi" "FormalCapitalY" "FormalCapitalZ"
+"FormalCapitalZeta" "FormalChi" "FormalCurlyCapitalUpsilon" "FormalCurlyEpsilon"
+"FormalCurlyKappa" "FormalCurlyPhi" "FormalCurlyPi" "FormalCurlyRho"
+"FormalCurlyTheta" "FormalD" "FormalDelta" "FormalDigamma" "FormalE"
+"FormalEpsilon" "FormalEta" "FormalF" "FormalFinalSigma" "FormalG"
+"FormalGamma" "FormalH" "FormalI" "FormalIota" "FormalJ" "FormalK"
+"FormalKappa" "FormalKoppa" "FormalL" "FormalLambda" "FormalM" "FormalMu"
+"FormalN" "FormalNu" "FormalO" "FormalOmega" "FormalOmicron" "FormalP"
+"FormalPhi" "FormalPi" "FormalPsi" "FormalQ" "FormalR" "FormalRho"
+"FormalS" "FormalSampi" "FormalScriptA" "FormalScriptB" "FormalScriptC"
+"FormalScriptCapitalA" "FormalScriptCapitalB" "FormalScriptCapitalC"
+"FormalScriptCapitalD" "FormalScriptCapitalE" "FormalScriptCapitalF"
+"FormalScriptCapitalG" "FormalScriptCapitalH" "FormalScriptCapitalI"
+"FormalScriptCapitalJ" "FormalScriptCapitalK" "FormalScriptCapitalL"
+"FormalScriptCapitalM" "FormalScriptCapitalN" "FormalScriptCapitalO"
+"FormalScriptCapitalP" "FormalScriptCapitalQ" "FormalScriptCapitalR"
+"FormalScriptCapitalS" "FormalScriptCapitalT" "FormalScriptCapitalU"
+"FormalScriptCapitalV" "FormalScriptCapitalW" "FormalScriptCapitalX"
+"FormalScriptCapitalY" "FormalScriptCapitalZ" "FormalScriptD" "FormalScriptE"
+"FormalScriptF" "FormalScriptG" "FormalScriptH" "FormalScriptI" "FormalScriptJ"
+"FormalScriptK" "FormalScriptL" "FormalScriptM" "FormalScriptN" "FormalScriptO"
+"FormalScriptP" "FormalScriptQ" "FormalScriptR" "FormalScriptS" "FormalScriptT"
+"FormalScriptU" "FormalScriptV" "FormalScriptW" "FormalScriptX" "FormalScriptY"
+"FormalScriptZ" "FormalSigma" "FormalStigma" "FormalT" "FormalTau"
+"FormalTheta" "FormalU" "FormalUpsilon" "FormalV" "FormalW" "FormalX"
+"FormalXi" "FormalY" "FormalZ" "FormalZeta" "FreakedSmiley" "Function"
+"Gamma" "GeminiSign" "Gimel" "GothicA" "GothicB" "GothicC" "GothicCapitalA"
+"GothicCapitalB" "GothicCapitalC" "GothicCapitalD" "GothicCapitalE"
+"GothicCapitalF" "GothicCapitalG" "GothicCapitalH" "GothicCapitalI"
+"GothicCapitalJ" "GothicCapitalK" "GothicCapitalL" "GothicCapitalM"
+"GothicCapitalN" "GothicCapitalO" "GothicCapitalP" "GothicCapitalQ"
+"GothicCapitalR" "GothicCapitalS" "GothicCapitalT" "GothicCapitalU"
+"GothicCapitalV" "GothicCapitalW" "GothicCapitalX" "GothicCapitalY"
+"GothicCapitalZ" "GothicD" "GothicE" "GothicEight" "GothicF" "GothicFive"
+"GothicFour" "GothicG" "GothicH" "GothicI" "GothicJ" "GothicK" "GothicL"
+"GothicM" "GothicN" "GothicNine" "GothicO" "GothicOne" "GothicP" "GothicQ"
+"GothicR" "GothicS" "GothicSeven" "GothicSix" "GothicT" "GothicThree"
+"GothicTwo" "GothicU" "GothicV" "GothicW" "GothicX" "GothicY" "GothicZ"
+"GothicZero" "GrayCircle" "GraySquare" "GreaterEqual" "GreaterEqualLess"
+"GreaterFullEqual" "GreaterGreater" "GreaterLess" "GreaterSlantEqual"
+"GreaterTilde" "HBar" "Hacek" "HappySmiley" "HeartSuit" "HermitianConjugate"
+"HorizontalLine" "HumpDownHump" "HumpEqual" "Hyphen" "IAcute" "ICup"
+"IDoubleDot" "IGrave" "IHat" "ImaginaryI" "ImaginaryJ" "ImplicitPlus"
+"Implies" "IndentingNewLine" "Infinity" "Integral" "Intersection" "InvisibleApplication"
+"InvisibleComma" "InvisiblePostfixScriptBase" "InvisiblePrefixScriptBase"
+"InvisibleSpace" "InvisibleTimes" "Iota" "Jupiter" "Kappa" "KernelIcon"
+"Koppa" "LSlash" "Lambda" "LastPage" "LeftAngleBracket" "LeftArrow"
+"LeftArrowBar" "LeftArrowRightArrow" "LeftAssociation" "LeftBracketingBar"
+"LeftCeiling" "LeftDoubleBracket" "LeftDoubleBracketingBar" "LeftDownTeeVector"
+"LeftDownVector" "LeftDownVectorBar" "LeftFloor" "LeftGuillemet" "LeftModified"
+"LeftPointer" "LeftRightArrow" "LeftRightVector" "LeftSkeleton" "LeftTee"
+"LeftTeeArrow" "LeftTeeVector" "LeftTriangle" "LeftTriangleBar" "LeftTriangleEqual"
+"LeftUpDownVector" "LeftUpTeeVector" "LeftUpVector" "LeftUpVectorBar"
+"LeftVector" "LeftVectorBar" "LeoSign" "LessEqual" "LessEqualGreater"
+"LessFullEqual" "LessGreater" "LessLess" "LessSlantEqual" "LessTilde"
+"LetterSpace" "LibraSign" "LightBulb" "LineSeparator" "LongDash" "LongEqual"
+"LongLeftArrow" "LongLeftRightArrow" "LongRightArrow" "LowerLeftArrow"
+"LowerRightArrow" "Mars" "MathematicaIcon" "MeasuredAngle" "MediumSpace"
+"Mercury" "Mho" "Micro" "MinusPlus" "Mu" "NHacek" "NTilde" "Nand" "Natural"
+"NegativeMediumSpace" "NegativeThickSpace" "NegativeThinSpace" "NegativeVeryThinSpace"
+"Neptune" "NestedGreaterGreater" "NestedLessLess" "NeutralSmiley" "NewLine"
+"NoBreak" "NonBreakingSpace" "Nor" "Not" "NotCongruent" "NotCupCap"
+"NotDoubleVerticalBar" "NotElement" "NotEqual" "NotEqualTilde" "NotExists"
+"NotGreater" "NotGreaterEqual" "NotGreaterFullEqual" "NotGreaterGreater"
+"NotGreaterLess" "NotGreaterSlantEqual" "NotGreaterTilde" "NotHumpDownHump"
+"NotHumpEqual" "NotLeftTriangle" "NotLeftTriangleBar" "NotLeftTriangleEqual"
+"NotLess" "NotLessEqual" "NotLessFullEqual" "NotLessGreater" "NotLessLess"
+"NotLessSlantEqual" "NotLessTilde" "NotNestedGreaterGreater" "NotNestedLessLess"
+"NotPrecedes" "NotPrecedesEqual" "NotPrecedesSlantEqual" "NotPrecedesTilde"
+"NotReverseElement" "NotRightTriangle" "NotRightTriangleBar" "NotRightTriangleEqual"
+"NotSquareSubset" "NotSquareSubsetEqual" "NotSquareSuperset" "NotSquareSupersetEqual"
+"NotSubset" "NotSubsetEqual" "NotSucceeds" "NotSucceedsEqual" "NotSucceedsSlantEqual"
+"NotSucceedsTilde" "NotSuperset" "NotSupersetEqual" "NotTilde" "NotTildeEqual"
+"NotTildeFullEqual" "NotTildeTilde" "NotVerticalBar" "Nu" "Null" "NumberSign"
+"OAcute" "ODoubleAcute" "ODoubleDot" "OE" "OGrave" "OHat" "OSlash"
+"OTilde" "Omega" "Omicron" "OpenCurlyDoubleQuote" "OpenCurlyQuote"
+"OptionKey" "Or" "OverBrace" "OverBracket" "OverParenthesis" "Paragraph"
+"ParagraphSeparator" "PartialD" "PermutationProduct" "Perpendicular"
+"Phi" "Pi" "Piecewise" "PiscesSign" "Placeholder" "PlusMinus" "Pluto"
+"Precedes" "PrecedesEqual" "PrecedesSlantEqual" "PrecedesTilde" "Prime"
+"Product" "Proportion" "Proportional" "Psi" "QuarterNote" "RHacek"
+"RawAmpersand" "RawAt" "RawBackquote" "RawBackslash" "RawColon" "RawComma"
+"RawDash" "RawDollar" "RawDot" "RawDoubleQuote" "RawEqual" "RawEscape"
+"RawExclamation" "RawGreater" "RawLeftBrace" "RawLeftBracket" "RawLeftParenthesis"
+"RawLess" "RawNumberSign" "RawPercent" "RawPlus" "RawQuestion" "RawQuote"
+"RawReturn" "RawRightBrace" "RawRightBracket" "RawRightParenthesis"
+"RawSemicolon" "RawSlash" "RawSpace" "RawStar" "RawTab" "RawTilde"
+"RawUnderscore" "RawVerticalBar" "RawWedge" "RegisteredTrademark" "ReturnIndicator"
+"ReturnKey" "ReverseDoublePrime" "ReverseElement" "ReverseEquilibrium"
+"ReversePrime" "ReverseUpEquilibrium" "Rho" "RightAngle" "RightAngleBracket"
+"RightArrow" "RightArrowBar" "RightArrowLeftArrow" "RightAssociation"
+"RightBracketingBar" "RightCeiling" "RightDoubleBracket" "RightDoubleBracketingBar"
+"RightDownTeeVector" "RightDownVector" "RightDownVectorBar" "RightFloor"
+"RightGuillemet" "RightModified" "RightPointer" "RightSkeleton" "RightTee"
+"RightTeeArrow" "RightTeeVector" "RightTriangle" "RightTriangleBar"
+"RightTriangleEqual" "RightUpDownVector" "RightUpTeeVector" "RightUpVector"
+"RightUpVectorBar" "RightVector" "RightVectorBar" "RoundImplies" "RoundSpaceIndicator"
+"Rule" "RuleDelayed" "SHacek" "SZ" "SadSmiley" "SagittariusSign" "Sampi"
+"Saturn" "ScorpioSign" "ScriptA" "ScriptB" "ScriptC" "ScriptCapitalA"
+"ScriptCapitalB" "ScriptCapitalC" "ScriptCapitalD" "ScriptCapitalE"
+"ScriptCapitalF" "ScriptCapitalG" "ScriptCapitalH" "ScriptCapitalI"
+"ScriptCapitalJ" "ScriptCapitalK" "ScriptCapitalL" "ScriptCapitalM"
+"ScriptCapitalN" "ScriptCapitalO" "ScriptCapitalP" "ScriptCapitalQ"
+"ScriptCapitalR" "ScriptCapitalS" "ScriptCapitalT" "ScriptCapitalU"
+"ScriptCapitalV" "ScriptCapitalW" "ScriptCapitalX" "ScriptCapitalY"
+"ScriptCapitalZ" "ScriptD" "ScriptDotlessI" "ScriptDotlessJ" "ScriptE"
+"ScriptEight" "ScriptF" "ScriptFive" "ScriptFour" "ScriptG" "ScriptH"
+"ScriptI" "ScriptJ" "ScriptK" "ScriptL" "ScriptM" "ScriptN" "ScriptNine"
+"ScriptO" "ScriptOne" "ScriptP" "ScriptQ" "ScriptR" "ScriptS" "ScriptSeven"
+"ScriptSix" "ScriptT" "ScriptThree" "ScriptTwo" "ScriptU" "ScriptV"
+"ScriptW" "ScriptX" "ScriptY" "ScriptZ" "ScriptZero" "Section" "SelectionPlaceholder"
+"Sharp" "ShortDownArrow" "ShortLeftArrow" "ShortRightArrow" "ShortUpArrow"
+"Sigma" "SixPointedStar" "SkeletonIndicator" "SmallCircle" "SpaceIndicator"
+"SpaceKey" "SpadeSuit" "SpanFromAbove" "SpanFromBoth" "SpanFromLeft"
+"SphericalAngle" "Sqrt" "Square" "SquareIntersection" "SquareSubset"
+"SquareSubsetEqual" "SquareSuperset" "SquareSupersetEqual" "SquareUnion"
+"Star" "Sterling" "Stigma" "Subset" "SubsetEqual" "Succeeds" "SucceedsEqual"
+"SucceedsSlantEqual" "SucceedsTilde" "SuchThat" "Sum" "Superset" "SupersetEqual"
+"SystemEnterKey" "SystemsModelDelay" "THacek" "TabKey" "Tau" "TaurusSign"
+"TensorProduct" "TensorWedge" "Therefore" "Theta" "ThickSpace" "ThinSpace"
+"Thorn" "Tilde" "TildeEqual" "TildeFullEqual" "TildeTilde" "Times"
+"Trademark" "Transpose" "TripleDot" "UAcute" "UDoubleAcute" "UDoubleDot"
+"UGrave" "UHat" "URing" "UnderBrace" "UnderBracket" "UnderParenthesis"
+"UndirectedEdge" "Union" "UnionPlus" "UpArrow" "UpArrowBar" "UpArrowDownArrow"
+"UpDownArrow" "UpEquilibrium" "UpPointer" "UpTee" "UpTeeArrow" "UpperLeftArrow"
+"UpperRightArrow" "Upsilon" "Uranus" "Vee" "Venus" "VerticalBar" "VerticalEllipsis"
+"VerticalLine" "VerticalSeparator" "VerticalTilde" "VeryThinSpace"
+"VirgoSign" "WarningSign" "WatchIcon" "Wedge" "WeierstrassP" "WhiteBishop"
+"WhiteKing" "WhiteKnight" "WhitePawn" "WhiteQueen" "WhiteRook" "Wolf"
+"WolframLanguageLogo" "WolframLanguageLogoCircle" "Xi" "Xnor" "Xor"
+"YAcute" "YDoubleDot" "Yen" "ZHacek" "Zeta"
+
+   ))
 
 (defvar xah-wolfram-funs1 nil "List of Wolfram Language symbols. Part of many.")
 
@@ -325,7 +427,7 @@ Version: 2024-03-21"
 "AlgebraicNumberDenominator" "AlgebraicNumberNorm"
 "AlgebraicNumberPolynomial" "AlgebraicNumberTrace" "AlgebraicRules"
 "AlgebraicRulesData" "Algebraics" "AlgebraicUnitQ" "Alignment"
-"AlignmentMarker" "AlignmentPoint" "All" "AllowAdultContent"
+ "AlignmentPoint" "All" "AllowAdultContent"
 "AllowedCloudExtraParameters" "AllowedCloudParameterExtensions"
 "AllowedDimensions" "AllowedFrequencyRange" "AllowedHeads"
 "AllowGroupClose" "AllowIncomplete" "AllowInlineCells"
@@ -405,7 +507,7 @@ Version: 2024-03-21"
 "AutoStyleWords" "AutoSubmitting" "Axes" "AxesEdge" "AxesLabel"
 "AxesOrigin" "AxesStyle" "AxiomaticTheory" "Axis" "Axis3DBox"
 "AxisBox" "BabyMonsterGroupB" "Back" "Background"
-"BackgroundAppearance" "BackgroundTasksSettings" "Backslash"
+"BackgroundAppearance" "BackgroundTasksSettings" 
 "Backsubstitution" "Backward" "Ball" "Band" "BandpassFilter"
 "BandstopFilter" "BarabasiAlbertGraphDistribution" "BarChart"
 "BarChart3D" "BarcodeImage" "BarcodeRecognize" "BaringhausHenzeTest"
@@ -484,7 +586,7 @@ Version: 2024-03-21"
 "CanonicalizePolygon" "CanonicalizePolyhedron" "CanonicalName"
 "CanonicalWarpingCorrespondence" "CanonicalWarpingDistance"
 "CantorMesh" "CantorStaircase" "Canvas" "Cap" "CapForm"
-"CapitalDifferentialD" "Capitalize" "CapsuleShape" "CaptureRunning"
+ "Capitalize" "CapsuleShape" "CaptureRunning"
 "CardinalBSplineBasis" "CarlemanLinearize" "CarmichaelLambda"
 "CaseOrdering" "Cases" "CaseSensitive" "Cashflow" "Casoratian"
 "Catalan" "CatalanNumber" "Catch" "CategoricalDistribution" "Catenate"
@@ -2310,16 +2412,19 @@ Deleted text can be pasted later (except 1 char).
 If `universal-argument' is called first, do not delete the bracketed inner text.
 
 Created: 2023-11-12
-Version: 2024-06-05"
+Version: 2024-06-08"
   (interactive)
   (let ((xp0 (point)))
     (cond
      ((region-active-p) (delete-region (region-beginning) (region-end)))
-     ;; 32 is space, 9 is tab, 10 is linefeed
-     ((eq (char-before) 32) (while (eq (char-before) 32) (delete-char -1)))
-     ((eq (char-before) 9) (while (eq (char-before) 9) (delete-char -1)))
-     ((eq (char-before) 10) (while (eq (char-before) 10) (delete-char -1)))
-
+     ((or
+       ;; 32 is space, 9 is tab, 10 is newline
+       (eq (char-before) 32)
+       (eq (char-before) 10)
+       (eq (char-before) 9))
+      (let ((xp0 (point)))
+        (skip-chars-backward " \t\n")
+        (kill-region (point) xp0)))
      ;; inside comment
      ((nth 4 (syntax-ppss)) (delete-char -1))
 
@@ -2449,8 +2554,6 @@ Version: 2021-07-24"
 
     ;; odd abbrevs
 
-    ("1st" "First[▮]" xah-wolfram--abhook)
-    ("last" "Last[▮]" xah-wolfram--abhook)
     ("asso" "Association" xah-wolfram--abhook)
     ("ff" "FullForm" xah-wolfram--abhook)
     ("fun" "Function" xah-wolfram--abhook)
@@ -2525,6 +2628,15 @@ Version: 2021-07-24"
    "false"
    "degree"
    "frame"
+
+   "axes"
+   "frame"
+   "point"
+   "polygon"
+
+   "first"
+   "last"
+   "part"
 
    ))
 
@@ -2784,11 +2896,15 @@ Version: 2023-09-29"
    (,(regexp-opt xah-wolfram-funs4 'symbols) . font-lock-function-name-face)
    (,(regexp-opt xah-wolfram-dollar-names 'symbols) . font-lock-builtin-face)
 
+   (,(regexp-opt xah-wolfram-special-char 'symbols) . font-lock-constant-face)
+
    ("\\b[a-z]+[0-9]*_+" . 'xah-wolfram-var-name)
    ("#[0-9]" . 'xah-wolfram-var-name)
    ("#+" . 'xah-wolfram-var-name)
    ("\\b[a-z][A-Za-z0-9]*" . font-lock-variable-name-face)
-   ("\\b[A-Z][A-Za-z0-9]*" . font-lock-warning-face)))
+   ("\\b[A-Z][A-Za-z0-9]*" . font-lock-warning-face)
+
+))
 
 ;; HHHH---------------------------------------------------
 ;; keybinding
@@ -2806,7 +2922,7 @@ Version: 2023-09-29"
   (define-key xah-wolfram-leader-map (kbd "SPC") #'xah-wolfram-complete-symbol)
 
   (define-key xah-wolfram-leader-map (kbd "c") #'xah-wolfram-format-compact)
-  (define-key xah-wolfram-leader-map (kbd "d") #'xah-wolfram-smart-delete-backward)
+  (define-key xah-wolfram-leader-map (kbd "<backspace>") #'xah-wolfram-smart-delete-backward)
 
   (define-key xah-wolfram-leader-map (kbd "TAB") #'xah-wolfram-format-pretty)
   (define-key xah-wolfram-leader-map (kbd "a") #'xah-wolfram-run-script-print-all)
