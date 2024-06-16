@@ -3,7 +3,7 @@
 ;; Copyright © 2021, 2024 by Xah Lee
 
 ;; Author: Xah Lee ( http://xahlee.info/ )
-;; Version: 2.15.20240608142623
+;; Version: 2.15.20240615203312
 ;; Created: 2021-07-24
 ;; Package-Requires: ((emacs "27"))
 ;; Keywords: languages, Wolfram Language, Mathematica
@@ -2398,6 +2398,8 @@ Version: 2023-12-12"
       (search-backward "(*")
       (kill-region (point) xp0))))
 
+
+
 (defun xah-wolfram-smart-delete-backward ()
   "Delete a thing to the left of cursor.
 
@@ -2412,7 +2414,7 @@ Deleted text can be pasted later (except 1 char).
 If `universal-argument' is called first, do not delete the bracketed inner text.
 
 Created: 2023-11-12
-Version: 2024-06-08"
+Version: 2024-06-15"
   (interactive)
   (let ((xp0 (point)))
     (cond
@@ -2424,7 +2426,9 @@ Version: 2024-06-08"
        (eq (char-before) 9))
       (let ((xp0 (point)))
         (skip-chars-backward " \t\n")
-        (kill-region (point) xp0)))
+        (if (eq real-this-command real-last-command)
+            (kill-append (delete-and-extract-region (point) xp0) t)
+          (kill-region (point) xp0))))
      ;; inside comment
      ((nth 4 (syntax-ppss)) (delete-char -1))
 
@@ -2441,6 +2445,8 @@ Version: 2024-06-08"
 
      ;; left is closing bracket
      ((prog2 (backward-char) (looking-at "\\s)") (forward-char))
+      (message "closing brackt")
+
       (let (xp1)
         (forward-sexp -1)
         (setq xp1 (point))
@@ -2451,7 +2457,8 @@ Version: 2024-06-08"
               (push-mark (point))
               (goto-char xp1)
               (delete-char 1))
-          (progn
+          (if (eq real-this-command real-last-command)
+              (kill-append (delete-and-extract-region xp1 xp0) t)
             (kill-region xp1 xp0)))))
 
      ;; left is opening bracket
@@ -2468,7 +2475,8 @@ Version: 2024-06-08"
               (push-mark (point))
               (goto-char xp1)
               (delete-char 1))
-          (progn
+          (if (eq real-this-command real-last-command)
+              (kill-append (delete-and-extract-region xp1 xp2) t)
             (kill-region xp1 xp2)))))
 
      ;; handle string case
@@ -2493,7 +2501,9 @@ Version: 2024-06-08"
               (delete-char -1)
               (goto-char xp1)
               (delete-char 1))
-          (kill-region xp1 xp2))))
+          (if (eq real-this-command real-last-command)
+              (kill-append (delete-and-extract-region xp1 xp2) t)
+            (kill-region xp1 xp2)))))
      (t (delete-char -1)))))
 
 (defun xah-wolfram-smart-newline ()
