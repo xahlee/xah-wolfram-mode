@@ -3,7 +3,7 @@
 ;; Copyright © 2021, 2024 by Xah Lee
 
 ;; Author: Xah Lee ( http://xahlee.info/ )
-;; Version: 2.15.20240615203312
+;; Version: 2.15.20240813010030
 ;; Created: 2021-07-24
 ;; Package-Requires: ((emacs "27"))
 ;; Keywords: languages, Wolfram Language, Mathematica
@@ -45,7 +45,7 @@
 ;; HHHH---------------------------------------------------
 ;;; Code:
 
-(defun xah-get-pos-of-block ()
+(defun xah-wl-get-pos-of-block ()
   "Return the [begin end] positions of current text block.
 Return value is a `vector'.
 Version: 2024-03-23"
@@ -59,13 +59,13 @@ Version: 2024-03-23"
                   (point))))
     (vector xp1 xp2)))
 
-(defun xah-get-pos-of-block-or ()
-  "If region is active, return its [begin end] positions, else same as `xah-get-pos-of-block'.
+(defun xah-wl-get-pos-of-block-or ()
+  "If region is active, return its [begin end] positions, else same as `xah-wl-get-pos-of-block'.
 Return value is a `vector'.
 Version: 2024-03-23"
   (if (region-active-p)
       (vector (region-beginning) (region-end))
-    (xah-get-pos-of-block)))
+    (xah-wl-get-pos-of-block)))
 
 (defun xah-wolfram--replace-regexp-pairs (Begin End Pairs &optional Fixedcase-p Literal-p Hilight-p)
   "Replace regex string find/replace Pairs in region.
@@ -80,6 +80,8 @@ The optional arguments Fixedcase-p and Literal-p is the same as in `replace-matc
 If Hilight-p is true, highlight the changed region.
 
 Find strings case sensitivity depends on `case-fold-search'. You can set it locally, like this: (let ((case-fold-search nil)) …)
+
+Created: 2024-03-30
 Version: 2024-03-30"
   (save-excursion
     (save-restriction
@@ -102,8 +104,11 @@ Version: 2024-03-30"
 
 (defun xah-wolfram-eval-region (Xbegin Xend)
   "Eval code in text selection with WolframScript.
-Version: 2024-03-21"
-  (interactive "r")
+If no active region, the current text block is used.
+
+Created: 2024-03-21
+Version: 2024-08-13"
+  (interactive (append (xah-wl-get-pos-of-block-or) nil))
   (let ((xcode (buffer-substring-no-properties Xbegin Xend))
         (xrandfilename
          (concat
@@ -507,7 +512,7 @@ nil
 "AutoStyleWords" "AutoSubmitting" "Axes" "AxesEdge" "AxesLabel"
 "AxesOrigin" "AxesStyle" "AxiomaticTheory" "Axis" "Axis3DBox"
 "AxisBox" "BabyMonsterGroupB" "Back" "Background"
-"BackgroundAppearance" "BackgroundTasksSettings" 
+"BackgroundAppearance" "BackgroundTasksSettings"
 "Backsubstitution" "Backward" "Ball" "Band" "BandpassFilter"
 "BandstopFilter" "BarabasiAlbertGraphDistribution" "BarChart"
 "BarChart3D" "BarcodeImage" "BarcodeRecognize" "BaringhausHenzeTest"
@@ -1762,7 +1767,7 @@ nil
 "RadicalBox" "RadicalBoxOptions" "RadioButton" "RadioButtonBar"
 "RadioButtonBox" "RadioButtonBoxOptions" "Radon" "RadonTransform"
 "RamanujanTau" "RamanujanTauL" "RamanujanTauTheta" "RamanujanTauZ"
-"Ramp" "Random" "RandomArrayLayer" "RandomChoice" "RandomColor"
+"Ramp" "RandomArrayLayer" "RandomChoice" "RandomColor"
 "RandomComplex" "RandomEntity" "RandomFunction" "RandomGeneratorState"
 "RandomGeoPosition" "RandomGraph" "RandomImage" "RandomInstance"
 "RandomInteger" "RandomPermutation" "RandomPoint"
@@ -2194,7 +2199,7 @@ nil
 "VerifyConvergence" "VerifyDerivedKey" "VerifyDigitalSignature"
 "VerifyFileSignature" "VerifyInterpretation"
 "VerifySecurityCertificates" "VerifySolutions" "VerifyTestAssumptions"
-"Version" "VersionedPreferences" "VersionNumber" "VertexAdd"
+"VersionedPreferences" "VertexAdd"
 "VertexCapacity" "VertexColors" "VertexComponent" "VertexConnectivity"
 "VertexContract" "VertexCoordinateRules" "VertexCoordinates"
 "VertexCorrelationSimilarity" "VertexCosineSimilarity" "VertexCount"
@@ -2398,8 +2403,6 @@ Version: 2023-12-12"
       (search-backward "(*")
       (kill-region (point) xp0))))
 
-
-
 (defun xah-wolfram-smart-delete-backward ()
   "Delete a thing to the left of cursor.
 
@@ -2519,7 +2522,7 @@ Version: 2021-08-06"
   "Abbrev hook function, used for `define-abbrev'.
 Created: 2016-10-24
 Version: 2024-05-15"
-  (when (search-backward "▮" (max (point-min) (- (point) 200)) t) (delete-char 1))
+  (when (search-backward "▮" last-abbrev-location t) (delete-char 1))
 t)
 
 (put 'xah-wolfram--abhook 'no-self-insert t)
@@ -2540,15 +2543,17 @@ Version: 2021-07-24"
 
     ;; abbrevs that expand to syntax
 
+    ("at" "@ " xah-wolfram--abhook)
     ("eq" "== " xah-wolfram--abhook)
     ("eqq" "=== " xah-wolfram--abhook)
     ("fn" "((#▮) &)" xah-wolfram--abhook)
     ("m" "/@ " xah-wolfram--abhook)
+    ("neq" "!= " xah-wolfram--abhook)
+    ("neqq" "=!= " xah-wolfram--abhook)
     ("pt" " //Print" xah-wolfram--abhook)
     ("ra" "-> ▮" xah-wolfram--abhook)
     ("same" "=== " xah-wolfram--abhook)
     ("set" "= " xah-wolfram--abhook)
-    ("at" "@ " xah-wolfram--abhook)
     ("var" "x = 3;" xah-wolfram--abhook)
 
     ;; common abbrevs
@@ -2699,7 +2704,7 @@ Version: 2024-03-31"
   (interactive)
   (save-excursion
     (let (xp1 xp2)
-      (seq-setq (xp1 xp2) (xah-get-pos-of-block-or))
+      (seq-setq (xp1 xp2) (xah-wl-get-pos-of-block-or))
       (save-restriction
         (narrow-to-region xp1 xp2)
         (let ((case-fold-search nil))
@@ -2718,7 +2723,7 @@ Created: 2021-08-01
 Version: 2024-03-24"
   (interactive)
   (let (xp1 xp2)
-    (seq-setq (xp1 xp2) (xah-get-pos-of-block-or))
+    (seq-setq (xp1 xp2) (xah-wl-get-pos-of-block-or))
     (save-restriction
       (narrow-to-region xp1 xp2)
       (xah-wolfram--replace-regexp-pairs
@@ -2753,7 +2758,7 @@ Created: 2021-07-25
 Version: 2024-03-24"
   (interactive)
   (let (xp1 xp2)
-    (seq-setq (xp1 xp2) (xah-get-pos-of-block-or))
+    (seq-setq (xp1 xp2) (xah-wl-get-pos-of-block-or))
     (save-restriction
       (narrow-to-region xp1 xp2)
       (xah-wolfram--replace-regexp-pairs
@@ -2816,18 +2821,18 @@ Version: 2024-03-24"
 Created: 2017-01-27
 Version: 2023-09-29"
   (interactive)
-  (let ((xp0 (point)) xp1 xp2 xthisSym xresultSym)
+  (let ((xp0 (point)) xp1 xp2 xword xresultW)
     (save-excursion
       (skip-chars-backward "$A-Za-z0-9")
       (setq xp1 (point))
       (goto-char xp0)
       (skip-chars-forward "$A-Za-z0-9")
       (setq xp2 (point)))
-    (setq xthisSym (buffer-substring-no-properties xp1 xp2))
-    (setq xresultSym (completing-read "" xah-wolfram-all-symbols nil t xthisSym))
+    (setq xword (buffer-substring-no-properties xp1 xp2))
+    (setq xresultW (completing-read "" xah-wolfram-all-symbols nil t xword))
     (delete-region xp1 xp2)
     (goto-char xp1)
-    (insert xresultSym "[  ]")
+    (insert xresultW "[  ]")
     (backward-char 2)))
 
 ;; HHHH---------------------------------------------------
