@@ -3,7 +3,7 @@
 ;; Copyright © 2021, 2024 by Xah Lee
 
 ;; Author: Xah Lee ( http://xahlee.info/ )
-;; Version: 2.15.20240813010030
+;; Version: 2.16.20240829175548
 ;; Created: 2021-07-24
 ;; Package-Requires: ((emacs "27"))
 ;; Keywords: languages, Wolfram Language, Mathematica
@@ -95,44 +95,52 @@ Version: 2024-03-30"
              (overlay-put (make-overlay (match-beginning 0) (match-end 0)) 'face 'highlight))))
        Pairs))))
 
-(defvar xah-wolfram-temp-dir-path nil "Path to temp dir used by xah commands. By default, the value is temp in `user-emacs-directory'.")
-(setq xah-wolfram-temp-dir-path (expand-file-name (concat user-emacs-directory "temp/")))
+(defvar xah-wolfram-temp-dir-path nil "Path to temp dir used by xah commands. If nil, then use `temporary-file-directory'.")
 
 ;; (defvar xah-wolfram-script-path nil "Path to wolframscript command line. can be just wolframscript or a full path.")
 ;; (setq xah-wolfram-script-path "c:/Program Files/Wolfram Research/Wolfram Desktop/14.0/wolframscript.exe")
 ;; (setq xah-wolfram-script-path "wolframscript")
 
-(defun xah-wolfram-eval-region (Xbegin Xend)
+(defun xah-wolfram-eval-region (Xbegin Xend &optional Xinsert)
   "Eval code in text selection with WolframScript.
 If no active region, the current text block is used.
 
+If `universal-argument' is called first, insert result below the region.
+
 Created: 2024-03-21
-Version: 2024-08-13"
-  (interactive (append (xah-wl-get-pos-of-block-or) nil))
+Version: 2024-08-29"
+  (interactive (append (xah-wl-get-pos-of-block-or) current-prefix-arg nil))
   (let ((xcode (buffer-substring-no-properties Xbegin Xend))
         (xrandfilename
          (concat
-          (if xah-wolfram-temp-dir-path
-              xah-wolfram-temp-dir-path
-            temporary-file-directory
-            )
+          (or xah-wolfram-temp-dir-path temporary-file-directory)
           (format "wolfram_%s_%x.wls" (format-time-string "%Y%m%d%-H%M%S") (random #xfffff))))
         (xoutBuf "*Wolfram output*")
         xcmdStr
         )
-    (setq xcmdStr (format  "wolframscript -print all -file %s &" xrandfilename))
+    (setq xcmdStr (format  "wolframscript -print all -file %s" xrandfilename))
     (with-temp-file xrandfilename
       (insert xcode))
     (message "Running 「%s」" xcmdStr)
-    (shell-command xcmdStr xoutBuf)
-    (display-buffer xoutBuf)))
+    (if Xinsert
+        (progn
+          (shell-command xcmdStr xoutBuf)
+          (goto-char Xend)
+          (insert "\n\n")
+          (insert-buffer-substring xoutBuf))
+      (progn
+        (async-shell-command  xcmdStr xoutBuf)
+        (display-buffer xoutBuf)))))
 
-(defun xah-wolfram-eval-current-line ()
+(defun xah-wolfram-eval-current-line (Xinsert)
   "Eval the current line with WolframScript.
+
+If `universal-argument' is called first, insert result below the line.
+
 Created: 2024-03-17
-Version: 2024-03-21"
-  (interactive)
-  (xah-wolfram-eval-region (line-beginning-position) (line-end-position)))
+Version: 2024-08-29"
+  (interactive (list current-prefix-arg))
+  (xah-wolfram-eval-region (line-beginning-position) (line-end-position) Xinsert))
 
 (defun xah-wolfram-run-script (Filepath &optional OptStr)
   "Execute the current file with WolframScript and print last expression.
@@ -2572,9 +2580,9 @@ Version: 2021-07-24"
     ("asso" "Association" xah-wolfram--abhook)
     ("ff" "FullForm" xah-wolfram--abhook)
     ("fun" "Function" xah-wolfram--abhook)
-    ("get" "Get[▮]" xah-wolfram--abhook)
     ("g3d" "Graphics3D" xah-wolfram--abhook)
     ("gc" "GraphicsComplex[▮,]" xah-wolfram--abhook)
+    ("get" "Get[▮]" xah-wolfram--abhook)
     ("gra" "Graphics" xah-wolfram--abhook)
     ("md" "Module" xah-wolfram--abhook)
     ("p" "Print" xah-wolfram--abhook)
@@ -2583,6 +2591,7 @@ Version: 2021-07-24"
     ("pr" "PlotRange" xah-wolfram--abhook)
     ("prod" "Product" xah-wolfram--abhook)
     ("regex" "RegularExpression" xah-wolfram--abhook)
+    ("rpa" "ReplaceAll" xah-wolfram--abhook)
     ("sl" "StringLength" xah-wolfram--abhook)
 
     ;; function templates
@@ -2600,6 +2609,7 @@ Version: 2021-07-24"
     ("Plot" "Plot[ Sin[x], {x, 1, 9}]" xah-wolfram--abhook)
     ("PlotRange" "PlotRange->{9▮}" xah-wolfram--abhook)
     ("RegularExpression" "RegularExpression[\"▮\"]" xah-wolfram--abhook)
+    ("ReplaceAll" "ReplaceAll[▮, {x_ -> 3}]" xah-wolfram--abhook)
     ("Table" "Table[ ▮, {x, 1, 9}]" xah-wolfram--abhook)
     ("With" "With[{x=2▮}, expr]" xah-wolfram--abhook)
 
