@@ -3,7 +3,7 @@
 ;; Copyright © 2021, 2024 by Xah Lee
 
 ;; Author: Xah Lee ( http://xahlee.info/ )
-;; Version: 2.16.20240829175548
+;; Version: 2.17.20241021132321
 ;; Created: 2021-07-24
 ;; Package-Requires: ((emacs "27"))
 ;; Keywords: languages, Wolfram Language, Mathematica
@@ -49,15 +49,15 @@
   "Return the [begin end] positions of current text block.
 Return value is a `vector'.
 Version: 2024-03-23"
-  (let (xp1 xp2 (xblankRegex "\n[ \t]*\n"))
+  (let (xbeg xend (xblankRegex "\n[ \t]*\n"))
     (save-excursion
-      (setq xp1 (if (re-search-backward xblankRegex nil 1)
+      (setq xbeg (if (re-search-backward xblankRegex nil 1)
                     (goto-char (match-end 0))
                   (point)))
-      (setq xp2 (if (re-search-forward xblankRegex nil 1)
+      (setq xend (if (re-search-forward xblankRegex nil 1)
                     (match-beginning 0)
                   (point))))
-    (vector xp1 xp2)))
+    (vector xbeg xend)))
 
 (defun xah-wl-get-pos-of-block-or ()
   "If region is active, return its [begin end] positions, else same as `xah-wl-get-pos-of-block'.
@@ -101,7 +101,7 @@ Version: 2024-03-30"
 ;; (setq xah-wolfram-script-path "c:/Program Files/Wolfram Research/Wolfram Desktop/14.0/wolframscript.exe")
 ;; (setq xah-wolfram-script-path "wolframscript")
 
-(defun xah-wolfram-eval-region (Xbegin Xend &optional Xinsert)
+(defun xah-wolfram-eval-region (Begin End &optional Xinsert)
   "Eval code in text selection with WolframScript.
 If no active region, the current text block is used.
 
@@ -110,7 +110,7 @@ If `universal-argument' is called first, insert result below the region.
 Created: 2024-03-21
 Version: 2024-08-29"
   (interactive (append (xah-wl-get-pos-of-block-or) current-prefix-arg nil))
-  (let ((xcode (buffer-substring-no-properties Xbegin Xend))
+  (let ((xcode (buffer-substring-no-properties Begin End))
         (xrandfilename
          (concat
           (or xah-wolfram-temp-dir-path temporary-file-directory)
@@ -125,14 +125,14 @@ Version: 2024-08-29"
     (if Xinsert
         (progn
           (shell-command xcmdStr xoutBuf)
-          (goto-char Xend)
+          (goto-char End)
           (insert "\n\n")
           (insert-buffer-substring xoutBuf))
       (progn
         (async-shell-command  xcmdStr xoutBuf)
         (display-buffer xoutBuf)))))
 
-(defun xah-wolfram-eval-current-line (Xinsert)
+(defun xah-wolfram-eval-current-line (&optional Xinsert)
   "Eval the current line with WolframScript.
 
 If `universal-argument' is called first, insert result below the line.
@@ -178,8 +178,9 @@ Version: 2024-03-21"
   "Run the current file with WolframScript with option -print all.
 calls `xah-wolfram-run-script'.
 Created: 2021-10-27
-Version: 2024-03-21"
+Version: 2024-09-18"
   (interactive)
+  (save-buffer)
   (xah-wolfram-run-script buffer-file-name "-print all"))
 
 (defvar xah-wolfram-special-char
@@ -2458,63 +2459,63 @@ Version: 2024-06-15"
      ((prog2 (backward-char) (looking-at "\\s)") (forward-char))
       (message "closing brackt")
 
-      (let (xp1)
+      (let (xbeg)
         (forward-sexp -1)
-        (setq xp1 (point))
+        (setq xbeg (point))
         (if current-prefix-arg
             (progn
               (goto-char xp0)
               (delete-char -1)
               (push-mark (point))
-              (goto-char xp1)
+              (goto-char xbeg)
               (delete-char 1))
           (if (eq real-this-command real-last-command)
-              (kill-append (delete-and-extract-region xp1 xp0) t)
-            (kill-region xp1 xp0)))))
+              (kill-append (delete-and-extract-region xbeg xp0) t)
+            (kill-region xbeg xp0)))))
 
      ;; left is opening bracket
      ((prog2 (backward-char) (looking-at "\\s(") (forward-char))
-      (let (xp1 xp2)
+      (let (xbeg xend)
         (backward-char)
-        (setq xp1 (point))
+        (setq xbeg (point))
         (forward-sexp)
-        (setq xp2 (point))
+        (setq xend (point))
         (if current-prefix-arg
             (progn
-              (goto-char xp2)
+              (goto-char xend)
               (delete-char -1)
               (push-mark (point))
-              (goto-char xp1)
+              (goto-char xbeg)
               (delete-char 1))
           (if (eq real-this-command real-last-command)
-              (kill-append (delete-and-extract-region xp1 xp2) t)
-            (kill-region xp1 xp2)))))
+              (kill-append (delete-and-extract-region xbeg xend) t)
+            (kill-region xbeg xend)))))
 
      ;; handle string case
      ((prog2 (backward-char) (looking-at "\\s\"") (forward-char))
-      (let (xp1 xp2)
-        ;; xp1 xp2 are the begin and end pos of the string
+      (let (xbeg xend)
+        ;; xbeg xend are the begin and end pos of the string
         ;; if inside string
         (if (nth 3 (syntax-ppss))
-            (setq xp1 (1- xp0)
-                  xp2
+            (setq xbeg (1- xp0)
+                  xend
                   (progn
                     (backward-char)
                     (forward-sexp)
                     (point)))
-          (setq xp2 (point)
-                xp1
+          (setq xend (point)
+                xbeg
                 (progn (forward-sexp -1) (point))))
         (if current-prefix-arg
             (progn
               (message "prefix case")
-              (goto-char xp2)
+              (goto-char xend)
               (delete-char -1)
-              (goto-char xp1)
+              (goto-char xbeg)
               (delete-char 1))
           (if (eq real-this-command real-last-command)
-              (kill-append (delete-and-extract-region xp1 xp2) t)
-            (kill-region xp1 xp2)))))
+              (kill-append (delete-and-extract-region xbeg xend) t)
+            (kill-region xbeg xend)))))
      (t (delete-char -1)))))
 
 (defun xah-wolfram-smart-newline ()
@@ -2559,7 +2560,7 @@ Version: 2021-07-24"
     ("neq" "!= " xah-wolfram--abhook)
     ("neqq" "=!= " xah-wolfram--abhook)
     ("pt" " //Print" xah-wolfram--abhook)
-    ("ra" "-> ▮" xah-wolfram--abhook)
+    ("ra" "-> " xah-wolfram--abhook)
     ("same" "=== " xah-wolfram--abhook)
     ("set" "= " xah-wolfram--abhook)
     ("var" "x = 3;" xah-wolfram--abhook)
@@ -2569,11 +2570,15 @@ Version: 2021-07-24"
     ("acos" "ArcCos" xah-wolfram--abhook)
     ("asin" "ArcSin" xah-wolfram--abhook)
     ("atan" "ArcTan" xah-wolfram--abhook)
-    ("clr" "Clear[▮];" xah-wolfram--abhook)
-    ("deg" "Degree" xah-wolfram--abhook)
+    ("clr" "Clear" xah-wolfram--abhook)
     ("inf" "Infinity" xah-wolfram--abhook)
     ("len" "Length" xah-wolfram--abhook)
     ("lim" "Limit" xah-wolfram--abhook)
+
+    ;; common constants. abbrev should not be full word
+
+    ("deg" "Degree " xah-wolfram--abhook)
+    ("int" "Integer " xah-wolfram--abhook)
 
     ;; odd abbrevs
 
@@ -2585,11 +2590,13 @@ Version: 2021-07-24"
     ("get" "Get[▮]" xah-wolfram--abhook)
     ("gra" "Graphics" xah-wolfram--abhook)
     ("md" "Module" xah-wolfram--abhook)
+    ("ops" "OrderlessPatternSequence" xah-wolfram--abhook)
     ("p" "Print" xah-wolfram--abhook)
     ("pp3" "ParametricPlot3D" xah-wolfram--abhook)
-    ("pp3d" "ParametricPlot3D"  xah-wolfram--abhook)
+    ("pp3d" "ParametricPlot3D" xah-wolfram--abhook)
     ("pr" "PlotRange" xah-wolfram--abhook)
     ("prod" "Product" xah-wolfram--abhook)
+    ("ps" "PatternSequence" xah-wolfram--abhook)
     ("regex" "RegularExpression" xah-wolfram--abhook)
     ("rpa" "ReplaceAll" xah-wolfram--abhook)
     ("sl" "StringLength" xah-wolfram--abhook)
@@ -2597,15 +2604,15 @@ Version: 2021-07-24"
     ;; function templates
 
     ("Association" "Association[▮ a -> 1, b -> 2]" xah-wolfram--abhook)
-    ("Function" "Function[{x},▮expr]" xah-wolfram--abhook)
+    ("Function" "Function[{x}, ▮expr]" xah-wolfram--abhook)
     ("GeometricTransformation" "GeometricTransformation[▮,tf]" xah-wolfram--abhook)
     ("Graphics" "Graphics[▮, Axes -> True ]" xah-wolfram--abhook)
     ("Graphics3D" "Graphics3D[▮, Axes -> True ]" xah-wolfram--abhook)
     ("If" "If[▮,y,n]" xah-wolfram--abhook)
     ("Limit" "Limit[x▮ , {x -> Infinity }]" xah-wolfram--abhook)
     ("Map" "Map[▮, list,{1}]" xah-wolfram--abhook)
-    ("Module" "Module[{x=2▮},\nexpr]" xah-wolfram--abhook)
-    ("ParametricPlot3D" "ParametricPlot3D[\n{Cos[u]*(2 + 1*Cos[v]), Sin[u]*(2 + 1*Cos[v]), 1*Sin[v]} , \n{u, 0, 6}, \n{v, 0, 6}, \n PlotPoints -> 100,\n Axes -> True,\n Boxed -> True,\n BoundaryStyle -> Directive[Black, Thin],\n PlotStyle -> Directive[White, Opacity[0.7], Specularity[10, 20]],\n Lighting -> \"Neutral\"]\n\n" xah-wolfram--abhook)
+    ("Module" "Module[{x=2▮}, expr]" xah-wolfram--abhook)
+    ("ParametricPlot3D" "ParametricPlot3D[{Cos[u]*(2 + 1*Cos[v]), Sin[u]*(2 + 1*Cos[v]), 1*Sin[v]} , {u, 0, 6}, {v, 0, 6}, PlotPoints -> 100, Axes -> True, Boxed -> True, BoundaryStyle -> Directive[Black, Thin], PlotStyle -> Directive[White, Opacity[0.7], Specularity[10, 20]], Lighting -> \"Neutral\"]" xah-wolfram--abhook)
     ("Plot" "Plot[ Sin[x], {x, 1, 9}]" xah-wolfram--abhook)
     ("PlotRange" "PlotRange->{9▮}" xah-wolfram--abhook)
     ("RegularExpression" "RegularExpression[\"▮\"]" xah-wolfram--abhook)
@@ -2622,61 +2629,15 @@ Version: 2021-07-24"
   :enable-function 'xah-wolfram--abb-enable-f
   )
 
-;; generate abbrev. simple lowercase to cap
-(mapc
- (lambda (x)
-   (define-abbrev
-     xah-wolfram-mode-abbrev-table x
-     (upcase-initials x)
-     'xah-wolfram--abhook))
- '(
+;; generate abbrev. simple lowercase to cap, symbol but is not function. adding a space at end
+(mapc (lambda (x) (define-abbrev xah-wolfram-mode-abbrev-table x (concat (upcase-initials x) " " ) 'xah-wolfram--abhook)) '("axes" "degree" "false" "frame" "frame" "pi" "true"))
 
-   "pi"
+;; generate abbrev. simple lowercase to cap, functions
 
-   "if"
-   "map"
-   "module"
-   "with"
-   "plot"
-   "range"
-   "table"
+(mapc (lambda (x) (define-abbrev xah-wolfram-mode-abbrev-table x (upcase-initials x) 'xah-wolfram--abhook)) '( "if" "map" "module" "with" "plot" "range" "table" "sin" "cos" "tan" "power" "product" "sum" "point" "polygon" "first" "last" "part" ))
 
-   "sin"
-   "cos"
-   "tan"
-
-   "power"
-   "product"
-   "sum"
-
-   "true"
-   "false"
-   "degree"
-   "frame"
-
-   "axes"
-   "frame"
-   "point"
-   "polygon"
-
-   "first"
-   "last"
-   "part"
-
-   ))
-
-;; generate abbrev for simple template of functions. just add [▮]
-(mapc
- (lambda (x)
-   (define-abbrev xah-wolfram-mode-abbrev-table x (concat x "[▮]") 'xah-wolfram--abhook))
- '(
-   "Sin"
-   "Cos"
-   "Tan"
-   "ArcSin"
-   "ArcCos"
-   "ArcTan"
-   ))
+;; generate abbrev for simple template of functions. just add []
+(mapc (lambda (x) (define-abbrev xah-wolfram-mode-abbrev-table x (concat x "[▮]") 'xah-wolfram--abhook)) '( "Sin" "Cos" "Tan" "ArcSin" "ArcCos" "ArcTan" "Clear" ))
 
 ;; HHHH---------------------------------------------------
 ;; indent/reformat related
@@ -2713,10 +2674,10 @@ Created: 2024-02-07
 Version: 2024-03-31"
   (interactive)
   (save-excursion
-    (let (xp1 xp2)
-      (seq-setq (xp1 xp2) (xah-wl-get-pos-of-block-or))
+    (let (xbeg xend)
+      (seq-setq (xbeg xend) (xah-wl-get-pos-of-block-or))
       (save-restriction
-        (narrow-to-region xp1 xp2)
+        (narrow-to-region xbeg xend)
         (let ((case-fold-search nil))
           (progn (goto-char (point-min)) (while (search-forward "\\[Pi]" nil t) (replace-match "Pi")))
           (progn (goto-char (point-min)) (while (search-forward "\\[Infinity]" nil t) (replace-match "Infinity")))
@@ -2732,10 +2693,10 @@ xtodo: not very good. should call kernel to do this.
 Created: 2021-08-01
 Version: 2024-03-24"
   (interactive)
-  (let (xp1 xp2)
-    (seq-setq (xp1 xp2) (xah-wl-get-pos-of-block-or))
+  (let (xbeg xend)
+    (seq-setq (xbeg xend) (xah-wl-get-pos-of-block-or))
     (save-restriction
-      (narrow-to-region xp1 xp2)
+      (narrow-to-region xbeg xend)
       (xah-wolfram--replace-regexp-pairs
        (point-min) (point-max)
        [
@@ -2767,10 +2728,10 @@ xtodo: not very good. should call kernel to do this.
 Created: 2021-07-25
 Version: 2024-03-24"
   (interactive)
-  (let (xp1 xp2)
-    (seq-setq (xp1 xp2) (xah-wl-get-pos-of-block-or))
+  (let (xbeg xend)
+    (seq-setq (xbeg xend) (xah-wl-get-pos-of-block-or))
     (save-restriction
-      (narrow-to-region xp1 xp2)
+      (narrow-to-region xbeg xend)
       (xah-wolfram--replace-regexp-pairs
        (point-min) (point-max)
        [
@@ -2831,17 +2792,17 @@ Version: 2024-03-24"
 Created: 2017-01-27
 Version: 2023-09-29"
   (interactive)
-  (let ((xp0 (point)) xp1 xp2 xword xresultW)
+  (let ((xp0 (point)) xbeg xend xword xresultW)
     (save-excursion
       (skip-chars-backward "$A-Za-z0-9")
-      (setq xp1 (point))
+      (setq xbeg (point))
       (goto-char xp0)
       (skip-chars-forward "$A-Za-z0-9")
-      (setq xp2 (point)))
-    (setq xword (buffer-substring-no-properties xp1 xp2))
+      (setq xend (point)))
+    (setq xword (buffer-substring-no-properties xbeg xend))
     (setq xresultW (completing-read "" xah-wolfram-all-symbols nil t xword))
-    (delete-region xp1 xp2)
-    (goto-char xp1)
+    (delete-region xbeg xend)
+    (goto-char xbeg)
     (insert xresultW "[  ]")
     (backward-char 2)))
 
@@ -2919,14 +2880,16 @@ Version: 2023-09-29"
    (,(regexp-opt xah-wolfram-funs3 'symbols) . font-lock-function-name-face)
    (,(regexp-opt xah-wolfram-funs3-5 'symbols) . font-lock-function-name-face)
    (,(regexp-opt xah-wolfram-funs4 'symbols) . font-lock-function-name-face)
+
    (,(regexp-opt xah-wolfram-dollar-names 'symbols) . font-lock-builtin-face)
 
    (,(regexp-opt xah-wolfram-special-char 'symbols) . font-lock-constant-face)
 
-   ("\\b[a-z]+[0-9]*_+" . 'xah-wolfram-var-name)
-   ("#[0-9]" . 'xah-wolfram-var-name)
-   ("#+" . 'xah-wolfram-var-name)
-   ("\\b[a-z][A-Za-z0-9]*" . font-lock-variable-name-face)
+   ;; ("\\b[a-z]+[0-9]*_+" . 'xah-wolfram-var-name)
+   ;; ("#[0-9]" . 'xah-wolfram-var-name)
+   ;; ("#+" . 'xah-wolfram-var-name)
+   ;; ("\\b[a-z][A-Za-z0-9]*" . font-lock-variable-name-face)
+
    ("\\b[A-Z][A-Za-z0-9]*" . font-lock-warning-face)
 
 ))
@@ -2951,11 +2914,11 @@ Version: 2023-09-29"
 
   (define-key xah-wolfram-leader-map (kbd "TAB") #'xah-wolfram-format-pretty)
   (define-key xah-wolfram-leader-map (kbd "a") #'xah-wolfram-run-script-print-all)
-  (define-key xah-wolfram-leader-map (kbd "e") #'xah-wolfram-eval-region)
+  (define-key xah-wolfram-leader-map (kbd "r") #'xah-wolfram-eval-region)
   (define-key xah-wolfram-leader-map (kbd "h") #'xah-wolfram-doc-lookup)
   (define-key xah-wolfram-leader-map (kbd "l") #'xah-wolfram-eval-current-line)
   (define-key xah-wolfram-leader-map (kbd "p") #'xah-wolfram-run-script-print-last)
-  (define-key xah-wolfram-leader-map (kbd "r") #'xah-wolfram-run-script)
+  (define-key xah-wolfram-leader-map (kbd "s") #'xah-wolfram-run-script)
   (define-key xah-wolfram-leader-map (kbd "t") #'xah-wolfram-replace-named-chars)
 
   (define-key xah-wolfram-leader-map (kbd "<return>") #'xah-wolfram-smart-newline))
