@@ -3,7 +3,7 @@
 ;; Copyright © 2021, 2024 by Xah Lee
 
 ;; Author: Xah Lee ( http://xahlee.info/ )
-;; Version: 2.17.20241021132321
+;; Version: 2.18.20241031002812
 ;; Created: 2021-07-24
 ;; Package-Requires: ((emacs "27"))
 ;; Keywords: languages, Wolfram Language, Mathematica
@@ -2903,7 +2903,7 @@ Version: 2023-09-29"
   (define-prefix-command 'xah-wolfram-leader-map)
 
   (define-key xah-wolfram-mode-map
-              (kbd (or xah-major-leader-key "TAB"))
+              (kbd (if (boundp 'xah-major-leader-key) xah-major-leader-key "TAB"))
               xah-wolfram-leader-map)
 
   ;; (define-key xah-wolfram-leader-map (kbd "SPC") #'xah-wolfram-complete-or-indent)
