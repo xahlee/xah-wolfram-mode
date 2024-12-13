@@ -3,7 +3,7 @@
 ;; Copyright © 2021, 2024 by Xah Lee
 
 ;; Author: Xah Lee ( http://xahlee.info/ )
-;; Version: 2.18.20241031002812
+;; Version: 2.18.20241212184241
 ;; Created: 2021-07-24
 ;; Package-Requires: ((emacs "27"))
 ;; Keywords: languages, Wolfram Language, Mathematica
@@ -95,11 +95,15 @@ Version: 2024-03-30"
              (overlay-put (make-overlay (match-beginning 0) (match-end 0)) 'face 'highlight))))
        Pairs))))
 
-(defvar xah-wolfram-temp-dir-path nil "Path to temp dir used by xah commands. If nil, then use `temporary-file-directory'.")
+(defvar xah-wolfram-temp-dir-path nil "Path to temp dir used by xah commands.
+If nil, then use `temporary-file-directory'.
+By default, the value is temporary-file-directory and subdir xah_emacs.")
 
-;; (defvar xah-wolfram-script-path nil "Path to wolframscript command line. can be just wolframscript or a full path.")
-;; (setq xah-wolfram-script-path "c:/Program Files/Wolfram Research/Wolfram Desktop/14.0/wolframscript.exe")
-;; (setq xah-wolfram-script-path "wolframscript")
+(setq xah-wolfram-temp-dir-path
+      (let ((xpath (concat temporary-file-directory "xah_emacs/")))
+        (if (file-exists-p xpath)
+            xpath
+          (progn (make-directory xpath) xpath))))
 
 (defun xah-wolfram-eval-region (Begin End &optional Xinsert)
   "Eval code in text selection with WolframScript.
@@ -108,28 +112,25 @@ If no active region, the current text block is used.
 If `universal-argument' is called first, insert result below the region.
 
 Created: 2024-03-21
-Version: 2024-08-29"
+Version: 2024-12-12"
   (interactive (append (xah-wl-get-pos-of-block-or) current-prefix-arg nil))
   (let ((xcode (buffer-substring-no-properties Begin End))
-        (xrandfilename
-         (concat
-          (or xah-wolfram-temp-dir-path temporary-file-directory)
-          (format "wolfram_%s_%x.wls" (format-time-string "%Y%m%d%-H%M%S") (random #xfffff))))
+        (xtempfilepath (concat xah-wolfram-temp-dir-path (format "wolfram_%s_%x.wls" (format-time-string "%Y%m%d%-H%M%S") (random #xfffff))))
         (xoutBuf "*Wolfram output*")
         xcmdStr
         )
-    (setq xcmdStr (format  "wolframscript -print all -file %s" xrandfilename))
-    (with-temp-file xrandfilename
-      (insert xcode))
+    (setq xcmdStr (format  "wolframscript -print all -file %s" xtempfilepath))
+    (with-temp-file xtempfilepath (insert xcode))
     (message "Running 「%s」" xcmdStr)
     (if Xinsert
         (progn
           (shell-command xcmdStr xoutBuf)
           (goto-char End)
           (insert "\n\n")
-          (insert-buffer-substring xoutBuf))
+          (insert-buffer-substring xoutBuf)
+          (delete-file xtempfilepath))
       (progn
-        (async-shell-command  xcmdStr xoutBuf)
+        (async-shell-command xcmdStr xoutBuf)
         (display-buffer xoutBuf)))))
 
 (defun xah-wolfram-eval-current-line (&optional Xinsert)
@@ -1202,7 +1203,7 @@ nil
 "HitMissTransform" "HITSCentrality" "HjorthDistribution" "HodgeDual"
 "HoeffdingD" "HoeffdingDTest" "Hold" "HoldAll" "HoldAllComplete"
 "HoldComplete" "HoldFirst" "HoldForm" "HoldPattern" "HoldRest"
-"HolidayCalendar" "HomeDirectory" "HomePage" "Horizontal"
+"HolidayCalendar" "HomePage" "Horizontal"
 "HorizontalForm" "HorizontalGauge" "HorizontalScrollPosition"
 "HornerForm" "HostLookup" "HotellingTSquareDistribution"
 "HoytDistribution" "HTMLSave" "HTTPErrorResponse" "HTTPRedirect"
@@ -2608,16 +2609,16 @@ Version: 2021-07-24"
     ("GeometricTransformation" "GeometricTransformation[▮,tf]" xah-wolfram--abhook)
     ("Graphics" "Graphics[▮, Axes -> True ]" xah-wolfram--abhook)
     ("Graphics3D" "Graphics3D[▮, Axes -> True ]" xah-wolfram--abhook)
-    ("If" "If[▮,y,n]" xah-wolfram--abhook)
+    ("If" "If[ ▮, y, n]" xah-wolfram--abhook)
     ("Limit" "Limit[x▮ , {x -> Infinity }]" xah-wolfram--abhook)
-    ("Map" "Map[▮, list,{1}]" xah-wolfram--abhook)
+    ("Map" "Map[▮, list, {1}]" xah-wolfram--abhook)
     ("Module" "Module[{x=2▮}, expr]" xah-wolfram--abhook)
     ("ParametricPlot3D" "ParametricPlot3D[{Cos[u]*(2 + 1*Cos[v]), Sin[u]*(2 + 1*Cos[v]), 1*Sin[v]} , {u, 0, 6}, {v, 0, 6}, PlotPoints -> 100, Axes -> True, Boxed -> True, BoundaryStyle -> Directive[Black, Thin], PlotStyle -> Directive[White, Opacity[0.7], Specularity[10, 20]], Lighting -> \"Neutral\"]" xah-wolfram--abhook)
     ("Plot" "Plot[ Sin[x], {x, 1, 9}]" xah-wolfram--abhook)
     ("PlotRange" "PlotRange->{9▮}" xah-wolfram--abhook)
     ("RegularExpression" "RegularExpression[\"▮\"]" xah-wolfram--abhook)
     ("ReplaceAll" "ReplaceAll[▮, {x_ -> 3}]" xah-wolfram--abhook)
-    ("Table" "Table[ ▮, {x, 1, 9}]" xah-wolfram--abhook)
+    ("Table" "Table[ ▮, {x, 1, 5}]" xah-wolfram--abhook)
     ("With" "With[{x=2▮}, expr]" xah-wolfram--abhook)
 
     ;;
@@ -2814,13 +2815,6 @@ Version: 2023-09-29"
 (setq
  xah-wolfram-mode-syntax-table
  (let ((xsynTable (make-syntax-table )))
-
-   ;; (modify-syntax-entry ?\( "()" xsynTable)
-   ;; (modify-syntax-entry ?\) ")(" xsynTable)
-   ;; (modify-syntax-entry ?\[ "(]" xsynTable)
-   ;; (modify-syntax-entry ?\] ")[" xsynTable)
-   ;; (modify-syntax-entry ?\{ "(}" xsynTable)
-   ;; (modify-syntax-entry ?\} "){" xsynTable)
 
    ;; comment
    (modify-syntax-entry ?\( "()1n" xsynTable)
