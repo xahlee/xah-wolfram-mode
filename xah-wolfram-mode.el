@@ -3,7 +3,7 @@
 ;; Copyright © 2021, 2024 by Xah Lee
 
 ;; Author: Xah Lee ( http://xahlee.info/ )
-;; Version: 2.18.20241212184241
+;; Version: 2.19.20241225115617
 ;; Created: 2021-07-24
 ;; Package-Requires: ((emacs "27"))
 ;; Keywords: languages, Wolfram Language, Mathematica
@@ -112,26 +112,24 @@ If no active region, the current text block is used.
 If `universal-argument' is called first, insert result below the region.
 
 Created: 2024-03-21
-Version: 2024-12-12"
+Version: 2024-12-13"
   (interactive (append (xah-wl-get-pos-of-block-or) current-prefix-arg nil))
   (let ((xcode (buffer-substring-no-properties Begin End))
         (xtempfilepath (concat xah-wolfram-temp-dir-path (format "wolfram_%s_%x.wls" (format-time-string "%Y%m%d%-H%M%S") (random #xfffff))))
-        (xoutBuf "*Wolfram output*")
-        xcmdStr
-        )
-    (setq xcmdStr (format  "wolframscript -print all -file %s" xtempfilepath))
+        (xoutbuf (get-buffer-create "*xah-wolfram-eval output*")))
     (with-temp-file xtempfilepath (insert xcode))
-    (message "Running 「%s」" xcmdStr)
+    (message "running 「%s」" (format "wolframscript -charset UTF8 -print all -file %s" xtempfilepath))
+    (save-current-buffer (set-buffer xoutbuf) (erase-buffer))
+    ;; (apply 'start-process (append (list "xah-wolfram-eval" xoutbuf "wolframscript" "-print" "all" "-file") (list xtempfilepath)))
+    (apply 'call-process (append (list "wolframscript" nil xoutbuf nil "-charset" "UTF8" "-print" "all" "-file") (list xtempfilepath)))
+    (delete-file xtempfilepath)
     (if Xinsert
         (progn
-          (shell-command xcmdStr xoutBuf)
           (goto-char End)
           (insert "\n\n")
-          (insert-buffer-substring xoutBuf)
-          (delete-file xtempfilepath))
+          (insert-buffer-substring xoutbuf))
       (progn
-        (async-shell-command xcmdStr xoutBuf)
-        (display-buffer xoutBuf)))))
+        (display-buffer xoutbuf)))))
 
 (defun xah-wolfram-eval-current-line (&optional Xinsert)
   "Eval the current line with WolframScript.
@@ -143,46 +141,20 @@ Version: 2024-08-29"
   (interactive (list current-prefix-arg))
   (xah-wolfram-eval-region (line-beginning-position) (line-end-position) Xinsert))
 
-(defun xah-wolfram-run-script (Filepath &optional OptStr)
-  "Execute the current file with WolframScript and print last expression.
+(defun xah-wolfram-eval-buffer ()
+  "Execute the current file with WolframScript and print all expressions.
 The current file should have one of the filename extension: wl wls.
-
-If `universal-argument' is called first, prompt user to give WolframScript command line options. (「-file name」 is always used.)
 
 If the file is modified, save it automatically before run.
 Created: 2021-10-27
-Version: 2024-03-22"
-  (interactive
-   (let (xpromptAnswer)
-     (when (not buffer-file-name) (user-error "Buffer is not a file. Save it first"))
-     (when (buffer-modified-p) (save-buffer))
-     (setq xpromptAnswer
-           (if current-prefix-arg
-               (read-string "WolframScript additional options:")
-             nil
-             ))
-     (list buffer-file-name xpromptAnswer)))
-  (let (xcmdStr (xoutBuf "*Wolfram output*"))
-    (setq xcmdStr (format  "wolframscript -print -file %s %s &" (shell-quote-argument Filepath) OptStr))
-    (message "Running 「%s」" xcmdStr)
-    (shell-command xcmdStr xoutBuf)
-    (display-buffer xoutBuf)))
-
-(defun xah-wolfram-run-script-print-last ()
-  "Run the current file with WolframScript, print last expression.
-calls `xah-wolfram-run-script'.
-Version: 2024-03-21"
+Version: 2024-12-25"
   (interactive)
-  (xah-wolfram-run-script buffer-file-name "-print"))
-
-(defun xah-wolfram-run-script-print-all ()
-  "Run the current file with WolframScript with option -print all.
-calls `xah-wolfram-run-script'.
-Created: 2021-10-27
-Version: 2024-09-18"
-  (interactive)
-  (save-buffer)
-  (xah-wolfram-run-script buffer-file-name "-print all"))
+  (when (not buffer-file-name) (user-error "Buffer is not a file. Save it first"))
+  (when (buffer-modified-p) (save-buffer))
+  (let ((xoutbuf (get-buffer-create "*xah-wolfram-eval output*" t)))
+    (save-current-buffer (set-buffer xoutbuf) (erase-buffer))
+    (start-process "xah-wolfram-eval" xoutbuf "wolframscript" "-print" "all" "-file" buffer-file-name)
+    (display-buffer xoutbuf)))
 
 (defvar xah-wolfram-special-char
 nil
@@ -2907,12 +2879,10 @@ Version: 2023-09-29"
   (define-key xah-wolfram-leader-map (kbd "<backspace>") #'xah-wolfram-smart-delete-backward)
 
   (define-key xah-wolfram-leader-map (kbd "TAB") #'xah-wolfram-format-pretty)
-  (define-key xah-wolfram-leader-map (kbd "a") #'xah-wolfram-run-script-print-all)
   (define-key xah-wolfram-leader-map (kbd "r") #'xah-wolfram-eval-region)
   (define-key xah-wolfram-leader-map (kbd "h") #'xah-wolfram-doc-lookup)
   (define-key xah-wolfram-leader-map (kbd "l") #'xah-wolfram-eval-current-line)
-  (define-key xah-wolfram-leader-map (kbd "p") #'xah-wolfram-run-script-print-last)
-  (define-key xah-wolfram-leader-map (kbd "s") #'xah-wolfram-run-script)
+  (define-key xah-wolfram-leader-map (kbd "b") #'xah-wolfram-eval-buffer)
   (define-key xah-wolfram-leader-map (kbd "t") #'xah-wolfram-replace-named-chars)
 
   (define-key xah-wolfram-leader-map (kbd "<return>") #'xah-wolfram-smart-newline))
