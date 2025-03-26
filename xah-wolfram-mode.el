@@ -3,7 +3,7 @@
 ;; Copyright © 2021, 2024 by Xah Lee
 
 ;; Author: Xah Lee ( http://xahlee.info/ )
-;; Version: 2.19.20241225115617
+;; Version: 2.19.20250325195031
 ;; Created: 2021-07-24
 ;; Package-Requires: ((emacs "27"))
 ;; Keywords: languages, Wolfram Language, Mathematica
@@ -42,30 +42,8 @@
 ;; you can change it by put this in your emacs init, before loading the mode
 ;; (setq xah-major-leader-key "<f6>")
 
-;; HHHH---------------------------------------------------
+;; HHHH------------------------------
 ;;; Code:
-
-(defun xah-wl-get-pos-of-block ()
-  "Return the [begin end] positions of current text block.
-Return value is a `vector'.
-Version: 2024-03-23"
-  (let (xbeg xend (xblankRegex "\n[ \t]*\n"))
-    (save-excursion
-      (setq xbeg (if (re-search-backward xblankRegex nil 1)
-                    (goto-char (match-end 0))
-                  (point)))
-      (setq xend (if (re-search-forward xblankRegex nil 1)
-                    (match-beginning 0)
-                  (point))))
-    (vector xbeg xend)))
-
-(defun xah-wl-get-pos-of-block-or ()
-  "If region is active, return its [begin end] positions, else same as `xah-wl-get-pos-of-block'.
-Return value is a `vector'.
-Version: 2024-03-23"
-  (if (region-active-p)
-      (vector (region-beginning) (region-end))
-    (xah-wl-get-pos-of-block)))
 
 (defun xah-wolfram--replace-regexp-pairs (Begin End Pairs &optional Fixedcase-p Literal-p Hilight-p)
   "Replace regex string find/replace Pairs in region.
@@ -112,8 +90,8 @@ If no active region, the current text block is used.
 If `universal-argument' is called first, insert result below the region.
 
 Created: 2024-03-21
-Version: 2024-12-13"
-  (interactive (append (xah-wl-get-pos-of-block-or) current-prefix-arg nil))
+Version: 2025-03-25"
+  (interactive (append (if (region-active-p) (list (region-beginning) (region-end)) (list (save-excursion (if (re-search-backward "\n[ \t]*\n" nil 1) (match-end 0) (point))) (save-excursion (if (re-search-forward "\n[ \t]*\n" nil 1) (match-beginning 0) (point))))) current-prefix-arg nil))
   (let ((xcode (buffer-substring-no-properties Begin End))
         (xtempfilepath (concat xah-wolfram-temp-dir-path (format "wolfram_%s_%x.wls" (format-time-string "%Y%m%d%-H%M%S") (random #xfffff))))
         (xoutbuf (get-buffer-create "*xah-wolfram-eval output*")))
@@ -126,7 +104,7 @@ Version: 2024-12-13"
     (if Xinsert
         (progn
           (goto-char End)
-          (insert "\n\n")
+          (insert "\n")
           (insert-buffer-substring xoutbuf))
       (progn
         (display-buffer xoutbuf)))))
@@ -2358,7 +2336,7 @@ nil
        xah-wolfram-dollar-names
        ))
 
-;; HHHH---------------------------------------------------
+;; HHHH------------------------------
 
 (defun xah-wolfram-doc-lookup ()
   "Look up the symbol under cursor in Wolfram doc site in web browser.
@@ -2497,7 +2475,7 @@ Version: 2021-08-06"
   (interactive)
   (insert ";\n"))
 
-;; HHHH---------------------------------------------------
+;; HHHH------------------------------
 ;; abbrev
 
 (defun xah-wolfram--abhook ()
@@ -2612,29 +2590,8 @@ Version: 2021-07-24"
 ;; generate abbrev for simple template of functions. just add []
 (mapc (lambda (x) (define-abbrev xah-wolfram-mode-abbrev-table x (concat x "[▮]") 'xah-wolfram--abhook)) '( "Sin" "Cos" "Tan" "ArcSin" "ArcCos" "ArcTan" "Clear" ))
 
-;; HHHH---------------------------------------------------
+;; HHHH------------------------------
 ;; indent/reformat related
-
-(defun xah-wolfram-complete-or-indent ()
-  "Do keyword completion or pretty format code.
-If cursor is in string or comment, do prettify.
-If char before cursor is a word, do completion, else do prettify.
-Prettify is done by `xah-wolfram-format-pretty'.
-
-Created: 2023-07-22
-Version: 2023-08-02"
-  (interactive)
-  (let ((xsyntaxState (syntax-ppss)))
-    (cond
-     ((or (nth 3 xsyntaxState) (nth 4 xsyntaxState))
-      (xah-wolfram-format-pretty))
-     ((eq (point-min) (point))
-      (xah-wolfram-format-pretty))
-     ((and
-       (prog2 (backward-char) (looking-at "[a-zA-Z]") (forward-char))
-       (or (eobp) (looking-at "[\n[:blank:][:punct:]]")))
-      (xah-wolfram-complete-symbol))
-     (t (xah-wolfram-format-pretty)))))
 
 (defun xah-wolfram-replace-named-chars ()
   "Replace \\[Pi] by Pi in current text block.
@@ -2644,11 +2601,11 @@ Also replace
 and few others.
 
 Created: 2024-02-07
-Version: 2024-03-31"
+Version: 2025-03-25"
   (interactive)
   (save-excursion
     (let (xbeg xend)
-      (seq-setq (xbeg xend) (xah-wl-get-pos-of-block-or))
+      (seq-setq (xbeg xend) (if (region-active-p) (list (region-beginning) (region-end)) (list (save-excursion (if (re-search-backward "\n[ \t]*\n" nil 1) (match-end 0) (point))) (save-excursion (if (re-search-forward "\n[ \t]*\n" nil 1) (match-beginning 0) (point))))))
       (save-restriction
         (narrow-to-region xbeg xend)
         (let ((case-fold-search nil))
@@ -2664,10 +2621,10 @@ Version: 2024-03-31"
   "Format current block in compact style.
 xtodo: not very good. should call kernel to do this.
 Created: 2021-08-01
-Version: 2024-03-24"
+Version: 2025-03-25"
   (interactive)
   (let (xbeg xend)
-    (seq-setq (xbeg xend) (xah-wl-get-pos-of-block-or))
+    (seq-setq (xbeg xend) (if (region-active-p) (list (region-beginning) (region-end)) (list (save-excursion (if (re-search-backward "\n[ \t]*\n" nil 1) (match-end 0) (point))) (save-excursion (if (re-search-forward "\n[ \t]*\n" nil 1) (match-beginning 0) (point))))))
     (save-restriction
       (narrow-to-region xbeg xend)
       (xah-wolfram--replace-regexp-pairs
@@ -2699,10 +2656,10 @@ Version: 2024-03-24"
   "Format current block in readable style.
 xtodo: not very good. should call kernel to do this.
 Created: 2021-07-25
-Version: 2024-03-24"
+Version: 2025-03-25"
   (interactive)
   (let (xbeg xend)
-    (seq-setq (xbeg xend) (xah-wl-get-pos-of-block-or))
+    (seq-setq (xbeg xend) (if (region-active-p) (list (region-beginning) (region-end)) (list (save-excursion (if (re-search-backward "\n[ \t]*\n" nil 1) (match-end 0) (point))) (save-excursion (if (re-search-forward "\n[ \t]*\n" nil 1) (match-beginning 0) (point))))))
     (save-restriction
       (narrow-to-region xbeg xend)
       (xah-wolfram--replace-regexp-pairs
@@ -2756,7 +2713,7 @@ Version: 2024-03-24"
         ["\n\n\n+" "\n\n"]
         ]))))
 
-;; HHHH---------------------------------------------------
+;; HHHH------------------------------
 ;; completion
 
 (defun xah-wolfram-complete-symbol ()
@@ -2779,7 +2736,7 @@ Version: 2023-09-29"
     (insert xresultW "[  ]")
     (backward-char 2)))
 
-;; HHHH---------------------------------------------------
+;; HHHH------------------------------
 ;; syntax table
 
 (defvar xah-wolfram-mode-syntax-table nil "Syntax table for `xah-wolfram-mode'.")
@@ -2824,7 +2781,7 @@ Version: 2023-09-29"
 
    xsynTable))
 
-;; HHHH---------------------------------------------------
+;; HHHH------------------------------
 ;; syntax coloring related
 
 (defface xah-wolfram-var-name
@@ -2860,7 +2817,7 @@ Version: 2023-09-29"
 
 ))
 
-;; HHHH---------------------------------------------------
+;; HHHH------------------------------
 ;; keybinding
 
 (defvar xah-wolfram-mode-map nil "Keybinding for `xah-wolfram-mode'")
@@ -2868,11 +2825,8 @@ Version: 2023-09-29"
   (setq xah-wolfram-mode-map (make-sparse-keymap))
   (define-prefix-command 'xah-wolfram-leader-map)
 
-  (define-key xah-wolfram-mode-map
-              (kbd (if (boundp 'xah-major-leader-key) xah-major-leader-key "TAB"))
-              xah-wolfram-leader-map)
+  (define-key xah-wolfram-mode-map (kbd (if (boundp 'xah-major-leader-key) xah-major-leader-key "TAB")) xah-wolfram-leader-map)
 
-  ;; (define-key xah-wolfram-leader-map (kbd "SPC") #'xah-wolfram-complete-or-indent)
   (define-key xah-wolfram-leader-map (kbd "SPC") #'xah-wolfram-complete-symbol)
 
   (define-key xah-wolfram-leader-map (kbd "c") #'xah-wolfram-format-compact)
@@ -2887,7 +2841,7 @@ Version: 2023-09-29"
 
   (define-key xah-wolfram-leader-map (kbd "<return>") #'xah-wolfram-smart-newline))
 
-;; HHHH---------------------------------------------------
+;; HHHH------------------------------
 
 ;;;###autoload
 (define-derived-mode xah-wolfram-mode prog-mode "xah-wolfram"
