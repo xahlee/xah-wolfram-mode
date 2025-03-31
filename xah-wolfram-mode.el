@@ -3,7 +3,7 @@
 ;; Copyright © 2021, 2024 by Xah Lee
 
 ;; Author: Xah Lee ( http://xahlee.info/ )
-;; Version: 2.19.20250325195031
+;; Version: 2.20.20250331130121
 ;; Created: 2021-07-24
 ;; Package-Requires: ((emacs "27"))
 ;; Keywords: languages, Wolfram Language, Mathematica
@@ -2476,121 +2476,6 @@ Version: 2021-08-06"
   (insert ";\n"))
 
 ;; HHHH------------------------------
-;; abbrev
-
-(defun xah-wolfram--abhook ()
-  "Abbrev hook function, used for `define-abbrev'.
-Created: 2016-10-24
-Version: 2024-05-15"
-  (when (search-backward "▮" last-abbrev-location t) (delete-char 1))
-t)
-
-(put 'xah-wolfram--abhook 'no-self-insert t)
-
-(defun xah-wolfram--abb-enable-f ()
-  "Return t if not in string or comment. Else nil.
-This is for abbrev table property `:enable-function'.
-Version: 2021-07-24"
-  (let ((xsyntaxState (syntax-ppss)))
-    (not (or (nth 3 xsyntaxState) (nth 4 xsyntaxState)))))
-
-(defvar xah-wolfram-mode-abbrev-table nil "abbrev table" )
-
-(setq xah-wolfram-mode-abbrev-table nil)
-
-(define-abbrev-table 'xah-wolfram-mode-abbrev-table
-  '(
-
-    ;; abbrevs that expand to syntax
-
-    ("at" "@ " xah-wolfram--abhook)
-    ("eq" "== " xah-wolfram--abhook)
-    ("eqq" "=== " xah-wolfram--abhook)
-    ("fn" "((#▮) &)" xah-wolfram--abhook)
-    ("m" "/@ " xah-wolfram--abhook)
-    ("neq" "!= " xah-wolfram--abhook)
-    ("neqq" "=!= " xah-wolfram--abhook)
-    ("pt" " //Print" xah-wolfram--abhook)
-    ("ra" "-> " xah-wolfram--abhook)
-    ("same" "=== " xah-wolfram--abhook)
-    ("set" "= " xah-wolfram--abhook)
-    ("var" "x = 3;" xah-wolfram--abhook)
-
-    ;; common abbrevs
-
-    ("acos" "ArcCos" xah-wolfram--abhook)
-    ("asin" "ArcSin" xah-wolfram--abhook)
-    ("atan" "ArcTan" xah-wolfram--abhook)
-    ("clr" "Clear" xah-wolfram--abhook)
-    ("inf" "Infinity" xah-wolfram--abhook)
-    ("len" "Length" xah-wolfram--abhook)
-    ("lim" "Limit" xah-wolfram--abhook)
-
-    ;; common constants. abbrev should not be full word
-
-    ("deg" "Degree " xah-wolfram--abhook)
-    ("int" "Integer " xah-wolfram--abhook)
-
-    ;; odd abbrevs
-
-    ("asso" "Association" xah-wolfram--abhook)
-    ("ff" "FullForm" xah-wolfram--abhook)
-    ("fun" "Function" xah-wolfram--abhook)
-    ("g3d" "Graphics3D" xah-wolfram--abhook)
-    ("gc" "GraphicsComplex[▮,]" xah-wolfram--abhook)
-    ("get" "Get[▮]" xah-wolfram--abhook)
-    ("gra" "Graphics" xah-wolfram--abhook)
-    ("md" "Module" xah-wolfram--abhook)
-    ("ops" "OrderlessPatternSequence" xah-wolfram--abhook)
-    ("p" "Print" xah-wolfram--abhook)
-    ("pp3" "ParametricPlot3D" xah-wolfram--abhook)
-    ("pp3d" "ParametricPlot3D" xah-wolfram--abhook)
-    ("pr" "PlotRange" xah-wolfram--abhook)
-    ("prod" "Product" xah-wolfram--abhook)
-    ("ps" "PatternSequence" xah-wolfram--abhook)
-    ("regex" "RegularExpression" xah-wolfram--abhook)
-    ("rpa" "ReplaceAll" xah-wolfram--abhook)
-    ("sl" "StringLength" xah-wolfram--abhook)
-
-    ;; function templates
-
-    ("Association" "Association[▮ a -> 1, b -> 2]" xah-wolfram--abhook)
-    ("Function" "Function[{x}, ▮expr]" xah-wolfram--abhook)
-    ("GeometricTransformation" "GeometricTransformation[▮,tf]" xah-wolfram--abhook)
-    ("Graphics" "Graphics[▮, Axes -> True ]" xah-wolfram--abhook)
-    ("Graphics3D" "Graphics3D[▮, Axes -> True ]" xah-wolfram--abhook)
-    ("If" "If[ ▮, y, n]" xah-wolfram--abhook)
-    ("Limit" "Limit[x▮ , {x -> Infinity }]" xah-wolfram--abhook)
-    ("Map" "Map[▮, list, {1}]" xah-wolfram--abhook)
-    ("Module" "Module[{x=2▮}, expr]" xah-wolfram--abhook)
-    ("ParametricPlot3D" "ParametricPlot3D[{Cos[u]*(2 + 1*Cos[v]), Sin[u]*(2 + 1*Cos[v]), 1*Sin[v]} , {u, 0, 6}, {v, 0, 6}, PlotPoints -> 100, Axes -> True, Boxed -> True, BoundaryStyle -> Directive[Black, Thin], PlotStyle -> Directive[White, Opacity[0.7], Specularity[10, 20]], Lighting -> \"Neutral\"]" xah-wolfram--abhook)
-    ("Plot" "Plot[ Sin[x], {x, 1, 9}]" xah-wolfram--abhook)
-    ("PlotRange" "PlotRange->{9▮}" xah-wolfram--abhook)
-    ("RegularExpression" "RegularExpression[\"▮\"]" xah-wolfram--abhook)
-    ("ReplaceAll" "ReplaceAll[▮, {x_ -> 3}]" xah-wolfram--abhook)
-    ("Table" "Table[ ▮, {x, 1, 5}]" xah-wolfram--abhook)
-    ("With" "With[{x=2▮}, expr]" xah-wolfram--abhook)
-
-    ;;
-    )
-
-  "Abbrev table for `xah-wolfram-mode'"
-  :case-fixed t
-  :system t
-  :enable-function 'xah-wolfram--abb-enable-f
-  )
-
-;; generate abbrev. simple lowercase to cap, symbol but is not function. adding a space at end
-(mapc (lambda (x) (define-abbrev xah-wolfram-mode-abbrev-table x (concat (upcase-initials x) " " ) 'xah-wolfram--abhook)) '("axes" "degree" "false" "frame" "frame" "pi" "true"))
-
-;; generate abbrev. simple lowercase to cap, functions
-
-(mapc (lambda (x) (define-abbrev xah-wolfram-mode-abbrev-table x (upcase-initials x) 'xah-wolfram--abhook)) '( "if" "map" "module" "with" "plot" "range" "table" "sin" "cos" "tan" "power" "product" "sum" "point" "polygon" "first" "last" "part" ))
-
-;; generate abbrev for simple template of functions. just add []
-(mapc (lambda (x) (define-abbrev xah-wolfram-mode-abbrev-table x (concat x "[▮]") 'xah-wolfram--abhook)) '( "Sin" "Cos" "Tan" "ArcSin" "ArcCos" "ArcTan" "Clear" ))
-
-;; HHHH------------------------------
 ;; indent/reformat related
 
 (defun xah-wolfram-replace-named-chars ()
@@ -2717,24 +2602,20 @@ Version: 2025-03-25"
 ;; completion
 
 (defun xah-wolfram-complete-symbol ()
-  "Perform keyword completion on current symbol.
-
+  "Do keyword completion on current symbol.
 Created: 2017-01-27
-Version: 2023-09-29"
+Version: 2025-03-30"
   (interactive)
   (let ((xp0 (point)) xbeg xend xword xresultW)
     (save-excursion
-      (skip-chars-backward "$A-Za-z0-9")
-      (setq xbeg (point))
+      (skip-chars-backward "$A-Za-z0-9") (setq xbeg (point))
       (goto-char xp0)
-      (skip-chars-forward "$A-Za-z0-9")
-      (setq xend (point)))
+      (skip-chars-forward "$A-Za-z0-9") (setq xend (point)))
     (setq xword (buffer-substring-no-properties xbeg xend))
     (setq xresultW (completing-read "" xah-wolfram-all-symbols nil t xword))
     (delete-region xbeg xend)
     (goto-char xbeg)
-    (insert xresultW "[  ]")
-    (backward-char 2)))
+    (insert xresultW)))
 
 ;; HHHH------------------------------
 ;; syntax table
@@ -2840,6 +2721,109 @@ Version: 2023-09-29"
   (define-key xah-wolfram-leader-map (kbd "t") #'xah-wolfram-replace-named-chars)
 
   (define-key xah-wolfram-leader-map (kbd "<return>") #'xah-wolfram-smart-newline))
+
+;; HHHH------------------------------
+;; abbrev
+
+(defun xah-wolfram--abhook ()
+  "Abbrev hook function, used for `define-abbrev'.
+Created: 2016-10-24
+Version: 2024-05-15"
+  (when (search-backward "▮" last-abbrev-location t) (delete-char 1))
+t)
+
+(put 'xah-wolfram--abhook 'no-self-insert t)
+
+(defun xah-wolfram--abb-enable-f ()
+  "Return t if not in string or comment. Else nil.
+This is for abbrev table property `:enable-function'.
+Version: 2021-07-24"
+  (let ((xsyntaxState (syntax-ppss)))
+    (not (or (nth 3 xsyntaxState) (nth 4 xsyntaxState)))))
+
+(defvar xah-wolfram-mode-abbrev-table nil "abbrev table" )
+
+(setq xah-wolfram-mode-abbrev-table nil)
+
+(define-abbrev-table 'xah-wolfram-mode-abbrev-table
+  '(
+
+    ;; abbrevs that expand to syntax
+
+    ("at" "@ " xah-wolfram--abhook)
+    ("eq" "== " xah-wolfram--abhook)
+    ("eqq" "=== " xah-wolfram--abhook)
+    ("m" "/@ " xah-wolfram--abhook)
+    ("neq" "!= " xah-wolfram--abhook)
+    ("neqq" "=!= " xah-wolfram--abhook)
+    ("pt" " //Print" xah-wolfram--abhook)
+    ("ra" "-> " xah-wolfram--abhook)
+    ("same" "=== " xah-wolfram--abhook)
+    ("set" "= " xah-wolfram--abhook)
+    ("var" "x = 3;" xah-wolfram--abhook)
+
+    ;; common abbrevs
+
+    ("acos" "ArcCos" xah-wolfram--abhook)
+    ("asin" "ArcSin" xah-wolfram--abhook)
+    ("atan" "ArcTan" xah-wolfram--abhook)
+    ("clr" "Clear" xah-wolfram--abhook)
+    ("inf" "Infinity" xah-wolfram--abhook)
+    ("len" "Length" xah-wolfram--abhook)
+    ("lim" "Limit" xah-wolfram--abhook)
+
+    ;; common constants. abbrev should not be full word
+
+    ("deg" "Degree " xah-wolfram--abhook)
+    ("int" "Integer " xah-wolfram--abhook)
+
+    ;; odd abbrevs
+
+    ("asso" "Association" xah-wolfram--abhook)
+    ("flfm" "FullForm" xah-wolfram--abhook)
+    ("fn" "Function" xah-wolfram--abhook)
+
+    ("regex" "RegularExpression" xah-wolfram--abhook)
+    ("rpa" "ReplaceAll" xah-wolfram--abhook)
+    ("strl" "StringLength" xah-wolfram--abhook)
+
+    ;; function templates
+
+    ("Association" "Association[▮ a -> 1, b -> 2]" xah-wolfram--abhook)
+    ("Function" "Function[x, ▮expr]" xah-wolfram--abhook)
+    ("GeometricTransformation" "GeometricTransformation[▮,tf]" xah-wolfram--abhook)
+    ("Graphics" "Graphics[▮, Axes -> True ]" xah-wolfram--abhook)
+    ("Graphics3D" "Graphics3D[▮, Axes -> True ]" xah-wolfram--abhook)
+    ("If" "If[ ▮, y, n]" xah-wolfram--abhook)
+    ("Limit" "Limit[x▮ , {x -> Infinity }]" xah-wolfram--abhook)
+    ("Map" "Map[▮, list, {1}]" xah-wolfram--abhook)
+    ("Module" "Module[{x=2▮}, expr]" xah-wolfram--abhook)
+    ("ParametricPlot3D" "ParametricPlot3D[{Cos[u]*(2 + 1*Cos[v]), Sin[u]*(2 + 1*Cos[v]), 1*Sin[v]} , {u, 0, 6}, {v, 0, 6}, PlotPoints -> 100, Axes -> True, Boxed -> True, BoundaryStyle -> Directive[Black, Thin], PlotStyle -> Directive[White, Opacity[0.7], Specularity[10, 20]], Lighting -> \"Neutral\"]" xah-wolfram--abhook)
+    ("Plot" "Plot[ Sin[x], {x, 1, 9}]" xah-wolfram--abhook)
+    ("PlotRange" "PlotRange->{9▮}" xah-wolfram--abhook)
+    ("RegularExpression" "RegularExpression[\"▮\"]" xah-wolfram--abhook)
+    ("ReplaceAll" "ReplaceAll[▮, {x_ -> 3}]" xah-wolfram--abhook)
+    ("Table" "Table[ ▮, {x, 1, 5}]" xah-wolfram--abhook)
+    ("With" "With[{x=2▮}, expr]" xah-wolfram--abhook)
+
+    ;;
+    )
+
+  "Abbrev table for `xah-wolfram-mode'"
+  :case-fixed t
+  :system t
+  :enable-function 'xah-wolfram--abb-enable-f
+  )
+
+;; generate abbrev. simple lowercase to cap, symbol but is not function. adding a space at end
+(mapc (lambda (x) (define-abbrev xah-wolfram-mode-abbrev-table x (concat (upcase-initials x) " " ) 'xah-wolfram--abhook)) '("axes" "degree" "false" "frame" "frame" "pi" "true"))
+
+;; generate abbrev. simple lowercase to cap, functions
+
+(mapc (lambda (x) (define-abbrev xah-wolfram-mode-abbrev-table x (upcase-initials x) 'xah-wolfram--abhook)) '( "if" "map" "module" "with" "plot" "range" "table" "sin" "cos" "tan" "power" "product" "sum" "point" "polygon" "first" "last" "part" ))
+
+;; generate abbrev for simple template of functions. just add []
+(mapc (lambda (x) (define-abbrev xah-wolfram-mode-abbrev-table x (concat x "[▮]") 'xah-wolfram--abhook)) '( "Sin" "Cos" "Tan" "ArcSin" "ArcCos" "ArcTan" "Clear" ))
 
 ;; HHHH------------------------------
 
