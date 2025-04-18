@@ -5,7 +5,7 @@
 ;; Author: Xah Lee ( http://xahlee.info/ )
 ;; Version: 2.20.20250331130121
 ;; Created: 2021-07-24
-;; Package-Requires: ((emacs "27"))
+;; Package-Requires: ((emacs "28.3"))
 ;; Keywords: languages, Wolfram Language, Mathematica
 ;; Homepage: http://xahlee.info/emacs/misc/xah-wolfram-mode.html
 
@@ -44,6 +44,8 @@
 
 ;; HHHH------------------------------
 ;;; Code:
+
+
 
 (defun xah-wolfram--replace-regexp-pairs (Begin End Pairs &optional Fixedcase-p Literal-p Hilight-p)
   "Replace regex string find/replace Pairs in region.
@@ -2604,7 +2606,7 @@ Version: 2025-03-25"
 (defun xah-wolfram-complete-symbol ()
   "Do keyword completion on current symbol.
 Created: 2017-01-27
-Version: 2025-03-30"
+Version: 2025-04-10"
   (interactive)
   (let ((xp0 (point)) xbeg xend xword xresultW)
     (save-excursion
@@ -2612,7 +2614,7 @@ Version: 2025-03-30"
       (goto-char xp0)
       (skip-chars-forward "$A-Za-z0-9") (setq xend (point)))
     (setq xword (buffer-substring-no-properties xbeg xend))
-    (setq xresultW (completing-read "" xah-wolfram-all-symbols nil t xword))
+    (setq xresultW (completing-read "keyword:" xah-wolfram-all-symbols nil t xword))
     (delete-region xbeg xend)
     (goto-char xbeg)
     (insert xresultW)))
