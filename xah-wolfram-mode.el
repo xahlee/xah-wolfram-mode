@@ -1,9 +1,9 @@
 ;;; xah-wolfram-mode.el --- Major mode for editing Wolfram Language. -*- coding: utf-8; lexical-binding: t; -*-
 
-;; Copyright © 2021, 2024 by Xah Lee
+;; Copyright © 2021, 2025 by Xah Lee
 
 ;; Author: Xah Lee ( http://xahlee.info/ )
-;; Version: 2.20.20250331130121
+;; Version: 2.20.20250628082155
 ;; Created: 2021-07-24
 ;; Package-Requires: ((emacs "28.3"))
 ;; Keywords: languages, Wolfram Language, Mathematica
@@ -92,14 +92,14 @@ If no active region, the current text block is used.
 If `universal-argument' is called first, insert result below the region.
 
 Created: 2024-03-21
-Version: 2025-03-25"
+Version: 2025-05-16"
   (interactive (append (if (region-active-p) (list (region-beginning) (region-end)) (list (save-excursion (if (re-search-backward "\n[ \t]*\n" nil 1) (match-end 0) (point))) (save-excursion (if (re-search-forward "\n[ \t]*\n" nil 1) (match-beginning 0) (point))))) current-prefix-arg nil))
   (let ((xcode (buffer-substring-no-properties Begin End))
         (xtempfilepath (concat xah-wolfram-temp-dir-path (format "wolfram_%s_%x.wls" (format-time-string "%Y%m%d%-H%M%S") (random #xfffff))))
         (xoutbuf (get-buffer-create "*xah-wolfram-eval output*")))
     (with-temp-file xtempfilepath (insert xcode))
     (message "running 「%s」" (format "wolframscript -charset UTF8 -print all -file %s" xtempfilepath))
-    (save-current-buffer (set-buffer xoutbuf) (erase-buffer))
+    (with-current-buffer xoutbuf (erase-buffer))
     ;; (apply 'start-process (append (list "xah-wolfram-eval" xoutbuf "wolframscript" "-print" "all" "-file") (list xtempfilepath)))
     (apply 'call-process (append (list "wolframscript" nil xoutbuf nil "-charset" "UTF8" "-print" "all" "-file") (list xtempfilepath)))
     (delete-file xtempfilepath)
@@ -127,12 +127,12 @@ The current file should have one of the filename extension: wl wls.
 
 If the file is modified, save it automatically before run.
 Created: 2021-10-27
-Version: 2024-12-25"
+Version: 2025-05-16"
   (interactive)
   (when (not buffer-file-name) (user-error "Buffer is not a file. Save it first"))
   (when (buffer-modified-p) (save-buffer))
   (let ((xoutbuf (get-buffer-create "*xah-wolfram-eval output*" t)))
-    (save-current-buffer (set-buffer xoutbuf) (erase-buffer))
+    (with-current-buffer xoutbuf (erase-buffer))
     (start-process "xah-wolfram-eval" xoutbuf "wolframscript" "-print" "all" "-file" buffer-file-name)
     (display-buffer xoutbuf)))
 
@@ -805,61 +805,54 @@ nil
 "DihedralAngle" "DihedralGroup" "Dilation" "DimensionalCombinations"
 "DimensionalMeshComponents" "DimensionReduce"
 "DimensionReducerFunction" "DimensionReduction" "Dimensions"
-"DiracComb" "DiracDelta" "DirectedEdge" "DirectedEdges"
-"DirectedGraph" "DirectedGraphQ" "DirectedInfinity" "DirectHitSearch"
-"Direction" "Directive" "Directory" "DirectoryName" "DirectoryQ"
-"DirectoryStack" "DirichletBeta" "DirichletCharacter"
-"DirichletCondition" "DirichletConvolve" "DirichletDistribution"
-"DirichletEta" "DirichletL" "DirichletLambda" "DirichletTransform"
-"DirichletWindow" "DisableConsolePrintPacket" "DisableFormatting"
-"DiscreteAsymptotic" "DiscreteChirpZTransform" "DiscreteConvolve"
-"DiscreteDelta" "DiscreteHadamardTransform" "DiscreteIndicator"
-"DiscreteLimit" "DiscreteLQEstimatorGains" "DiscreteLQRegulatorGains"
+
+"DMSList" "DMSString" "DOSTextFormat" "DSolve" "DSolveValue" "DiracComb"
+"DiracDelta" "DirectHitSearch" "DirectedEdge" "DirectedEdges" "DirectedGraph"
+"DirectedGraphQ" "DirectedInfinity" "Direction" "DirectionalLight"
+"Directive" "Directory" "DirectoryName" "DirectoryQ" "DirectoryStack"
+"DirichletBeta" "DirichletCharacter" "DirichletCondition" "DirichletConvolve"
+"DirichletDistribution" "DirichletEta" "DirichletL" "DirichletLambda"
+"DirichletTransform" "DirichletWindow" "DisableConsolePrintPacket"
+"DisableFormatting" "DiscreteAsymptotic" "DiscreteChirpZTransform"
+"DiscreteConvolve" "DiscreteDelta" "DiscreteHadamardTransform" "DiscreteIndicator"
+"DiscreteLQEstimatorGains" "DiscreteLQRegulatorGains" "DiscreteLimit"
 "DiscreteLyapunovSolve" "DiscreteMarkovProcess" "DiscreteMaxLimit"
 "DiscreteMinLimit" "DiscretePlot" "DiscretePlot3D" "DiscreteRatio"
-"DiscreteRiccatiSolve" "DiscreteShift" "DiscreteTimeModelQ"
-"DiscreteUniformDistribution" "DiscreteVariables"
-"DiscreteWaveletData" "DiscreteWaveletPacketTransform"
+"DiscreteRiccatiSolve" "DiscreteShift" "DiscreteTimeModelQ" "DiscreteUniformDistribution"
+"DiscreteVariables" "DiscreteWaveletData" "DiscreteWaveletPacketTransform"
 "DiscreteWaveletTransform" "DiscretizeGraphics" "DiscretizeRegion"
 "Discriminant" "DisjointQ" "Disjunction" "Disk" "DiskBox" "DiskMatrix"
 "DiskSegment" "Dispatch" "DispatchQ" "DispersionEstimatorFunction"
-"Display" "DisplayAllSteps" "DisplayEndPacket"
-"DisplayFlushImagePacket" "DisplayForm" "DisplayFunction"
-"DisplayPacket" "DisplayRules" "DisplaySetSizePacket" "DisplayString"
-"DisplayTemporary" "DisplayWith" "DisplayWithRef"
-"DisplayWithVariable" "DistanceFunction" "DistanceMatrix"
-"DistanceTransform" "Distribute" "Distributed" "DistributedContexts"
-"DistributeDefinitions" "DistributionChart" "DistributionDomain"
-"DistributionFitTest" "DistributionParameterAssumptions"
-"DistributionParameterQ" "Dithering" "Div" "Divergence" "Divide"
-"DivideBy" "Dividers" "DivideSides" "Divisible" "Divisors"
-"DivisorSigma" "DivisorSum" "DMSList" "DMSString" "Do" "DockedCells"
-"docQueryString" "DocumentationIndexes" "DocumentationIndexMerger"
-"DocumentationNotebookIndexer" "DocumentationSpellIndexes"
-"DocumentGenerator" "DocumentGeneratorInformation"
-"DocumentGeneratorInformationData" "DocumentGenerators"
-"DocumentNotebook" "DocumentWeightingRules" "Dodecahedron"
-"DomainRegistrationInformation" "DominantColors" "DOSTextFormat" "Dot"
-"DotDashed" "DotEqual" "DotLayer" "DotPlusLayer" "Dotted"
-"DoubleBracketingBar" "DoubleContourIntegral" "DoubleDownArrow"
-"DoubleLeftArrow" "DoubleLeftRightArrow" "DoubleLeftTee"
-"DoubleLongLeftArrow" "DoubleLongLeftRightArrow"
-"DoubleLongRightArrow" "DoubleRightArrow" "DoubleRightTee"
-"DoubleUpArrow" "DoubleUpDownArrow" "DoubleVerticalBar"
-"DoublyInfinite" "Down" "DownArrow" "DownArrowBar" "DownArrowUpArrow"
-"DownLeftRightVector" "DownLeftTeeVector" "DownLeftVector"
-"DownLeftVectorBar" "DownRightTeeVector" "DownRightVector"
-"DownRightVectorBar" "Downsample" "DownTee" "DownTeeArrow"
-"DownValues" "DragAndDrop" "DrawEdges" "DrawFrontFaces"
-"DrawHighlighted" "Drop" "DropoutLayer" "DSolve" "DSolveValue" "Dt"
-"DualLinearProgramming" "DualPolyhedron" "DualSystemsModel"
-"DumpGet" "DumpSave" "DuplicateFreeQ" "Duration" "Dynamic"
-"DynamicBox" "DynamicBoxOptions" "DynamicEvaluationTimeout"
+"Display" "DisplayAllSteps" "DisplayEndPacket" "DisplayFlushImagePacket"
+"DisplayForm" "DisplayFunction" "DisplayPacket" "DisplayRules" "DisplaySetSizePacket"
+"DisplayString" "DisplayTemporary" "DisplayWith" "DisplayWithRef" "DisplayWithVariable"
+"DistanceFunction" "DistanceMatrix" "DistanceTransform" "Distribute"
+"DistributeDefinitions" "Distributed" "DistributedContexts" "DistributionChart"
+"DistributionDomain" "DistributionFitTest" "DistributionParameterAssumptions"
+"DistributionParameterQ" "Dithering" "Div" "Divergence" "Divide" "DivideBy"
+"DivideSides" "Dividers" "Divisible" "DivisorSigma" "DivisorSum" "Divisors"
+"Do" "DockedCells" "DocumentGenerator" "DocumentGeneratorInformation"
+"DocumentGeneratorInformationData" "DocumentGenerators" "DocumentNotebook"
+"DocumentWeightingRules" "DocumentationIndexMerger" "DocumentationIndexes"
+"DocumentationNotebookIndexer" "DocumentationSpellIndexes" "Dodecahedron"
+"DomainRegistrationInformation" "DominantColors" "Dot" "DotDashed"
+"DotEqual" "DotLayer" "DotPlusLayer" "Dotted" "DoubleBracketingBar"
+"DoubleContourIntegral" "DoubleDownArrow" "DoubleLeftArrow" "DoubleLeftRightArrow"
+"DoubleLeftTee" "DoubleLongLeftArrow" "DoubleLongLeftRightArrow" "DoubleLongRightArrow"
+"DoubleRightArrow" "DoubleRightTee" "DoubleUpArrow" "DoubleUpDownArrow"
+"DoubleVerticalBar" "DoublyInfinite" "Down" "DownArrow" "DownArrowBar"
+"DownArrowUpArrow" "DownLeftRightVector" "DownLeftTeeVector" "DownLeftVector"
+"DownLeftVectorBar" "DownRightTeeVector" "DownRightVector" "DownRightVectorBar"
+"DownTee" "DownTeeArrow" "DownValues" "Downsample" "DragAndDrop" "DrawEdges"
+"DrawFrontFaces" "DrawHighlighted" "Drop" "DropoutLayer" "Dt" "DualLinearProgramming"
+"DualPolyhedron" "DualSystemsModel" "DumpGet" "DumpSave" "DuplicateFreeQ"
+"Duration" "Dynamic" "DynamicBox" "DynamicBoxOptions" "DynamicEvaluationTimeout"
 "DynamicGeoGraphics" "DynamicImage" "DynamicLocation" "DynamicModule"
 "DynamicModuleBox" "DynamicModuleBoxOptions" "DynamicModuleParent"
-"DynamicModuleValues" "DynamicName" "DynamicNamespace"
-"DynamicReference" "DynamicSetting" "DynamicUpdating" "DynamicWrapper"
-"DynamicWrapperBox" "DynamicWrapperBoxOptions"
+"DynamicModuleValues" "DynamicName" "DynamicNamespace" "DynamicReference"
+"DynamicSetting" "DynamicUpdating" "DynamicWrapper" "DynamicWrapperBox"
+"DynamicWrapperBoxOptions" "docQueryString"
+
 ))
 
 (defvar xah-wolfram-funs2 nil "List of Wolfram Language symbols. Part of many.")
@@ -1655,13 +1648,15 @@ nil
 "PlotLabels" "PlotLayout" "PlotLegends" "PlotMarkers" "PlotPoints"
 "PlotRange" "PlotRangeClipping" "PlotRangeClipPlanesStyle"
 "PlotRangePadding" "PlotRegion" "PlotStyle" "PlotTheme" "Pluralize"
-"Plus" "PlusMinus" "Pochhammer" "PodStates" "PodWidth" "Point"
-"Point3DBox" "Point3DBoxOptions" "PointBox" "PointBoxOptions"
-"PointCountDistribution" "PointDensity" "PointDensityFunction"
-"PointFigureChart" "PointLegend" "PointProcessEstimator"
-"PointProcessFitTest" "PointProcessParameterAssumptions"
-"PointProcessParameterQ" "PointSize" "PointStatisticFunction"
-"PointValuePlot" "PoissonConsulDistribution" "PoissonDistribution"
+"Plus" "PlusMinus" "Pochhammer" "PodStates" "PodWidth" 
+
+"Point" "Point3DBox" "Point3DBoxOptions" "PointBox" "PointBoxOptions"
+"PointCountDistribution" "PointDensity" "PointDensityFunction" "PointFigureChart"
+"PointLegend" "PointLight" "PointProcessEstimator" "PointProcessFitTest"
+"PointProcessParameterAssumptions" "PointProcessParameterQ" "PointSize"
+"PointStatisticFunction" "PointValuePlot"
+
+"PoissonConsulDistribution" "PoissonDistribution"
 "PoissonPDEComponent" "PoissonPointProcess" "PoissonProcess"
 "PoissonWindow" "PolarAxes" "PolarAxesOrigin" "PolarGridLines"
 "PolarPlot" "PolarTicks" "PoleZeroMarkers" "PolyaAeppliDistribution"
@@ -1724,7 +1719,9 @@ nil
 "QuantityVariablePhysicalQuantity" "Quartics" "QuartileDeviation"
 "Quartiles" "QuartileSkewness" "Query" "QueueingNetworkProcess"
 "QueueingProcess" "QueueProperties" "Quiet" "QuietEcho" "Quit"
-"Quotient" "QuotientRemainder" "RadialAxisPlot"
+"Quotient" "QuotientRemainder" 
+
+"RadialAxisPlot"
 "RadialGradientFilling" "RadialGradientImage" "RadialityCentrality"
 "RadicalBox" "RadicalBoxOptions" "RadioButton" "RadioButtonBar"
 "RadioButtonBox" "RadioButtonBoxOptions" "Radon" "RadonTransform"
@@ -1888,7 +1885,9 @@ nil
 "ShowInvisibleCharacters" "ShowPageBreaks" "ShowPredictiveInterface"
 "ShowSelection" "ShowShortBoxForm" "ShowSpecialCharacters"
 "ShowStringCharacters" "ShowSyntaxStyles" "ShrinkingDelay"
-"ShrinkWrapBoundingBox" "SiderealTime" "SiegelTheta" "SiegelTukeyTest"
+"ShrinkWrapBoundingBox" 
+
+"SiderealTime" "SiegelTheta" "SiegelTukeyTest"
 "SierpinskiCurve" "SierpinskiMesh" "Sign" "Signature" "SignedRankTest"
 "SignedRegionDistance" "SignificanceLevel" "SignPadding" "SignTest"
 "SimilarityRules" "SimpleGraph" "SimpleGraphQ" "SimplePolygonQ"
@@ -1912,34 +1911,31 @@ nil
 "SolarEclipse" "SolarSystemFeatureData" "SolidAngle" "SolidData"
 "SolidRegionQ" "Solve" "SolveAlways" "SolveDelayed" "Sort" "SortBy"
 "SortedBy" "SortedEntityClass" "Sound" "SoundAndGraphics" "SoundNote"
-"SoundVolume" "SourceLink" "SourcePDETerm" "Sow" "Space"
-"SpaceCurveData" "SpaceForm" "Spacer" "Spacings" "Span"
-"SpanAdjustments" "SpanCharacterRounding" "SpanFromAbove"
-"SpanFromBoth" "SpanFromLeft" "SpanLineThickness" "SpanMaxSize"
-"SpanMinSize" "SpanningCharacters" "SpanSymmetric" "SparseArray"
-"SpatialBinnedPointData" "SpatialBoundaryCorrection"
-"SpatialGraphDistribution" "SpatialJ" "SpatialMedian"
-"SpatialObservationRegionQ" "SpatialPointData" "SpatialPointSelect"
-"SpatialRandomnessTest" "SpatialTransformationLayer" "Speak"
-"SpeakerMatchQ" "SpeakTextPacket" "SpearmanRankTest" "SpearmanRho"
-"SpeciesData" "SpecificityGoal" "SpectralLineData" "Spectrogram"
-"SpectrogramArray" "Specularity" "SpeechCases" "SpeechInterpreter"
-"SpeechRecognize" "SpeechSynthesize" "SpellingCorrection"
-"SpellingCorrectionList" "SpellingDictionaries"
-"SpellingDictionariesPath" "SpellingOptions"
-"SpellingSuggestionsPacket" "Sphere" "SphereBox" "SpherePoints"
-"SphericalBesselJ" "SphericalBesselY" "SphericalHankelH1"
-"SphericalHankelH2" "SphericalHarmonicY" "SphericalPlot3D"
-"SphericalRegion" "SphericalShell" "SpheroidalEigenvalue"
-"SpheroidalJoiningFactor" "SpheroidalPS" "SpheroidalPSPrime"
-"SpheroidalQS" "SpheroidalQSPrime" "SpheroidalRadialFactor"
-"SpheroidalS1" "SpheroidalS1Prime" "SpheroidalS2" "SpheroidalS2Prime"
-"Splice" "SplicedDistribution" "SplineClosed" "SplineDegree"
-"SplineKnots" "SplineWeights" "Split" "SplitBy" "SpokenString" "Sqrt"
-"SqrtBox" "SqrtBoxOptions" "Square" "SquaredEuclideanDistance"
-"SquareFreeQ" "SquareIntersection" "SquareMatrixQ"
-"SquareRepeatingElement" "SquaresR" "SquareSubset" "SquareSubsetEqual"
-"SquareSuperset" "SquareSupersetEqual" "SquareUnion" "SquareWave"
+"SoundVolume" "SourceLink" "SourcePDETerm" "Sow" 
+
+"Space" "SpaceCurveData" "SpaceForm" "Spacer" "Spacings" "Span" "SpanAdjustments"
+"SpanCharacterRounding" "SpanFromAbove" "SpanFromBoth" "SpanFromLeft"
+"SpanLineThickness" "SpanMaxSize" "SpanMinSize" "SpanSymmetric" "SpanningCharacters"
+"SparseArray" "SpatialBinnedPointData" "SpatialBoundaryCorrection"
+"SpatialGraphDistribution" "SpatialJ" "SpatialMedian" "SpatialObservationRegionQ"
+"SpatialPointData" "SpatialPointSelect" "SpatialRandomnessTest" "SpatialTransformationLayer"
+"Speak" "SpeakTextPacket" "SpeakerMatchQ" "SpearmanRankTest" "SpearmanRho"
+"SpeciesData" "SpecificityGoal" "SpectralLineData" "Spectrogram" "SpectrogramArray"
+"Specularity" "SpeechCases" "SpeechInterpreter" "SpeechRecognize" "SpeechSynthesize"
+"SpellingCorrection" "SpellingCorrectionList" "SpellingDictionaries"
+"SpellingDictionariesPath" "SpellingOptions" "SpellingSuggestionsPacket"
+"Sphere" "SphereBox" "SpherePoints" "SphericalBesselJ" "SphericalBesselY"
+"SphericalHankelH1" "SphericalHankelH2" "SphericalHarmonicY" "SphericalPlot3D"
+"SphericalRegion" "SphericalShell" "SpheroidalEigenvalue" "SpheroidalJoiningFactor"
+"SpheroidalPS" "SpheroidalPSPrime" "SpheroidalQS" "SpheroidalQSPrime"
+"SpheroidalRadialFactor" "SpheroidalS1" "SpheroidalS1Prime" "SpheroidalS2"
+"SpheroidalS2Prime" "Splice" "SplicedDistribution" "SplineClosed" "SplineDegree"
+"SplineKnots" "SplineWeights" "Split" "SplitBy" "SpokenString" "SpotLight"
+"Sqrt" "SqrtBox" "SqrtBoxOptions" "Square" "SquareFreeQ" "SquareIntersection"
+"SquareMatrixQ" "SquareRepeatingElement" "SquareSubset" "SquareSubsetEqual"
+"SquareSuperset" "SquareSupersetEqual" "SquareUnion" "SquareWave" "SquaredEuclideanDistance"
+"SquaresR"
+
 "SSSTriangle" "StabilityMargins" "StabilityMarginsStyle"
 "StableDistribution" "Stack" "StackBegin" "StackComplete"
 "StackedDateListPlot" "StackedListPlot" "StackInhibit" "StadiumShape"
@@ -1977,7 +1973,9 @@ nil
 "StudentTDistribution" "Style" "StyleBox" "StyleBoxAutoDelete"
 "StyleData" "StyleDefinitions" "StyleForm" "StyleHints"
 "StyleKeyMapping" "StyleMenuListing" "StyleNameDialogSettings"
-"StyleNames" "StylePrint" "StyleSheetPath" "Subdivide" "Subfactorial"
+"StyleNames" "StylePrint" "StyleSheetPath" 
+
+"Subdivide" "Subfactorial"
 "Subgraph" "SubMinus" "SubPlus" "SubresultantPolynomialRemainders"
 "SubresultantPolynomials" "Subresultants" "Subscript" "SubscriptBox"
 "SubscriptBoxOptions" "Subscripted" "Subsequences" "Subset"
@@ -2061,18 +2059,20 @@ nil
 "TimeSeriesRescale" "TimeSeriesShift" "TimeSeriesThread"
 "TimeSeriesWindow" "TimeUsed" "TimeValue" "TimeWarpingCorrespondence"
 "TimeWarpingDistance" "TimeZone" "TimeZoneConvert" "TimeZoneOffset"
-"Timing" "Tiny" "TitleGrouping" "TitsGroupT" "ToBoxes"
-"ToCharacterCode" "ToColor" "ToContinuousTimeModel" "ToDate" "Today"
-"ToDiscreteTimeModel" "ToEntity" "ToeplitzMatrix" "ToExpression"
-"ToFileName" "Together" "Toggle" "ToggleFalse" "Toggler" "TogglerBar"
-"TogglerBox" "TogglerBoxOptions" "ToHeldExpression"
-"ToInvertibleTimeSeries" "TokenWords" "Tolerance" "ToLowerCase"
-"Tomorrow" "ToNumberField" "TooBig" "Tooltip" "TooltipBox"
-"TooltipBoxOptions" "TooltipDelay" "TooltipStyle" "ToonShading" "Top"
-"TopHatTransform" "ToPolarCoordinates" "TopologicalSort" "ToRadicals"
-"ToRules" "ToSphericalCoordinates" "ToString" "Total" "TotalHeight"
-"TotalLayer" "TotalVariationFilter" "TotalWidth" "TouchPosition"
-"TouchscreenAutoZoom" "TouchscreenControlPlacement" "ToUpperCase" "Tr"
+"Timing" "Tiny" "TitleGrouping" "TitsGroupT" 
+
+"ToBoxes" "ToCharacterCode" "ToColor" "ToContinuousTimeModel" "ToDate"
+"ToDiscreteTimeModel" "ToEntity" "ToExpression" "ToFileName" "ToHeldExpression"
+"ToInvertibleTimeSeries" "ToLowerCase" "ToNumberField" "ToPolarCoordinates"
+"ToRadicals" "ToRules" "ToSphericalCoordinates" "ToString" "ToUpperCase"
+"Today" "ToeplitzMatrix" "Together" "Toggle" "ToggleFalse" "Toggler"
+"TogglerBar" "TogglerBox" "TogglerBoxOptions" "TokenWords" "Tolerance"
+"Tomorrow" "TooBig" "Tooltip" "TooltipBox" "TooltipBoxOptions" "TooltipDelay"
+"TooltipStyle" "ToonShading" "Top" "TopHatTransform" "TopologicalSort"
+"Torus" "Total" "TotalHeight" "TotalLayer" "TotalVariationFilter" "TotalWidth"
+"TouchPosition" "TouchscreenAutoZoom" "TouchscreenControlPlacement"
+
+"Tr"
 "Trace" "TraceAbove" "TraceAction" "TraceBackward" "TraceDepth"
 "TraceDialog" "TraceForward" "TraceInternal" "TraceLevel" "TraceOff"
 "TraceOn" "TraceOriginal" "TracePrint" "TraceScan" "TrackedSymbols"
@@ -2508,7 +2508,7 @@ Version: 2025-03-25"
   "Format current block in compact style.
 xtodo: not very good. should call kernel to do this.
 Created: 2021-08-01
-Version: 2025-03-25"
+Version: 2025-06-09"
   (interactive)
   (let (xbeg xend)
     (seq-setq (xbeg xend) (if (region-active-p) (list (region-beginning) (region-end)) (list (save-excursion (if (re-search-backward "\n[ \t]*\n" nil 1) (match-end 0) (point))) (save-excursion (if (re-search-forward "\n[ \t]*\n" nil 1) (match-beginning 0) (point))))))
@@ -2526,16 +2526,16 @@ Version: 2025-03-25"
         [" \\[" "["]
         ["\\[ " "["]
         [" \\]" "]"]
-        [" =" "="]
-        ["= " "="]
-        [" &" "&"]
-        [" /@ " "/@"]
-        [" -> " "->"]
-        [" :> " ":>"]
-        [" := " ":="]
-        [" , " ","]
-        [", " ","]
-        [" ;" ";"]
+        ;; [" =" "="]
+        ;; ["= " "="]
+        ;; [" &" "&"]
+        ;; [" /@ " "/@"]
+        ;; [" -> " "->"]
+        ;; [" :> " ":>"]
+        ;; [" := " ":="]
+        ;; [" , " ","]
+        ;; [", " ","]
+        ;; [" ;" ";"]
         ]
        ))))
 
@@ -2739,9 +2739,11 @@ t)
 (defun xah-wolfram--abb-enable-f ()
   "Return t if not in string or comment. Else nil.
 This is for abbrev table property `:enable-function'.
-Version: 2021-07-24"
-  (let ((xsyntaxState (syntax-ppss)))
-    (not (or (nth 3 xsyntaxState) (nth 4 xsyntaxState)))))
+Created: 2021-07-24
+Version: 2025-06-18"
+  ;; (let ((xsyntaxState (syntax-ppss)))
+  ;;   (not (or (nth 3 xsyntaxState) (nth 4 xsyntaxState))))
+  t)
 
 (defvar xah-wolfram-mode-abbrev-table nil "abbrev table" )
 
@@ -2761,8 +2763,7 @@ Version: 2021-07-24"
     ("pt" " //Print" xah-wolfram--abhook)
     ("ra" "-> " xah-wolfram--abhook)
     ("same" "=== " xah-wolfram--abhook)
-    ("set" "= " xah-wolfram--abhook)
-    ("var" "x = 3;" xah-wolfram--abhook)
+    ("var" "▮x = 3" xah-wolfram--abhook)
 
     ;; common abbrevs
 
