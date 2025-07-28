@@ -3,7 +3,7 @@
 ;; Copyright © 2021, 2025 by Xah Lee
 
 ;; Author: Xah Lee ( http://xahlee.info/ )
-;; Version: 2.20.20250628082155
+;; Version: 2.21.20250728114000
 ;; Created: 2021-07-24
 ;; Package-Requires: ((emacs "28.3"))
 ;; Keywords: languages, Wolfram Language, Mathematica
@@ -2654,13 +2654,13 @@ Version: 2025-04-10"
    (modify-syntax-entry ?> "." xsynTable)
    (modify-syntax-entry ?? "." xsynTable)
    (modify-syntax-entry ?@ "." xsynTable)
-   (modify-syntax-entry ?\ "." xsynTable)
+   ;; (modify-syntax-entry ?\ "." xsynTable)
    (modify-syntax-entry ?^ "." xsynTable)
    (modify-syntax-entry ?_ "." xsynTable)
    (modify-syntax-entry ?` "." xsynTable)
    (modify-syntax-entry ?| "." xsynTable)
    (modify-syntax-entry ?~ "." xsynTable)
-   (modify-syntax-entry ?\\ "." xsynTable)
+   ;; (modify-syntax-entry ?\\ "." xsynTable)
 
    xsynTable))
 
@@ -2819,7 +2819,20 @@ Version: 2025-06-18"
   )
 
 ;; generate abbrev. simple lowercase to cap, symbol but is not function. adding a space at end
-(mapc (lambda (x) (define-abbrev xah-wolfram-mode-abbrev-table x (concat (upcase-initials x) " " ) 'xah-wolfram--abhook)) '("axes" "degree" "false" "frame" "frame" "pi" "true"))
+(mapc (lambda (x) (define-abbrev xah-wolfram-mode-abbrev-table x (concat (upcase-initials x) " ") 'xah-wolfram--abhook))
+      '(
+        ;;
+
+        "axes"
+        "degree"
+        "false"
+        "frame"
+        "none"
+        "pi"
+        "true"
+
+        ;;
+        ))
 
 ;; generate abbrev. simple lowercase to cap, functions
 
