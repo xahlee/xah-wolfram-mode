@@ -3,7 +3,7 @@
 ;; Copyright © 2021, 2025 by Xah Lee
 
 ;; Author: Xah Lee ( http://xahlee.info/ )
-;; Version: 2.21.20250728114000
+;; Version: 2.21.20250731163229
 ;; Created: 2021-07-24
 ;; Package-Requires: ((emacs "28.3"))
 ;; Keywords: languages, Wolfram Language, Mathematica
@@ -75,16 +75,6 @@ Version: 2024-03-30"
              (overlay-put (make-overlay (match-beginning 0) (match-end 0)) 'face 'highlight))))
        Pairs))))
 
-(defvar xah-wolfram-temp-dir-path nil "Path to temp dir used by xah commands.
-If nil, then use `temporary-file-directory'.
-By default, the value is temporary-file-directory and subdir xah_emacs.")
-
-(setq xah-wolfram-temp-dir-path
-      (let ((xpath (concat temporary-file-directory "xah_emacs/")))
-        (if (file-exists-p xpath)
-            xpath
-          (progn (make-directory xpath) xpath))))
-
 (defun xah-wolfram-eval-region (Begin End &optional Xinsert)
   "Eval code in text selection with WolframScript.
 If no active region, the current text block is used.
@@ -92,17 +82,13 @@ If no active region, the current text block is used.
 If `universal-argument' is called first, insert result below the region.
 
 Created: 2024-03-21
-Version: 2025-05-16"
+Version: 2025-07-31"
   (interactive (append (if (region-active-p) (list (region-beginning) (region-end)) (list (save-excursion (if (re-search-backward "\n[ \t]*\n" nil 1) (match-end 0) (point))) (save-excursion (if (re-search-forward "\n[ \t]*\n" nil 1) (match-beginning 0) (point))))) current-prefix-arg nil))
   (let ((xcode (buffer-substring-no-properties Begin End))
-        (xtempfilepath (concat xah-wolfram-temp-dir-path (format "wolfram_%s_%x.wls" (format-time-string "%Y%m%d%-H%M%S") (random #xfffff))))
         (xoutbuf (get-buffer-create "*xah-wolfram-eval output*")))
-    (with-temp-file xtempfilepath (insert xcode))
-    (message "running 「%s」" (format "wolframscript -charset UTF8 -print all -file %s" xtempfilepath))
+    (message "running: wolframscript -charset UTF8 -print all -code ...")
     (with-current-buffer xoutbuf (erase-buffer))
-    ;; (apply 'start-process (append (list "xah-wolfram-eval" xoutbuf "wolframscript" "-print" "all" "-file") (list xtempfilepath)))
-    (apply 'call-process (append (list "wolframscript" nil xoutbuf nil "-charset" "UTF8" "-print" "all" "-file") (list xtempfilepath)))
-    (delete-file xtempfilepath)
+    (call-process "wolframscript" nil xoutbuf nil "-charset" "UTF8" "-print" "all" "-code" xcode)
     (if Xinsert
         (progn
           (goto-char End)
@@ -2379,11 +2365,11 @@ Deleted text can be pasted later (except 1 char).
 If `universal-argument' is called first, do not delete the bracketed inner text.
 
 Created: 2023-11-12
-Version: 2024-06-15"
+Version: 2025-07-31"
   (interactive)
   (let ((xp0 (point)))
     (cond
-     ((region-active-p) (delete-region (region-beginning) (region-end)))
+     ((region-active-p) (kill-region (region-beginning) (region-end)))
      ((or
        ;; 32 is space, 9 is tab, 10 is newline
        (eq (char-before) 32)
@@ -2757,7 +2743,7 @@ Version: 2025-06-18"
     ("at" "@ " xah-wolfram--abhook)
     ("eq" "== " xah-wolfram--abhook)
     ("eqq" "=== " xah-wolfram--abhook)
-    ("m" "/@ " xah-wolfram--abhook)
+    ("mp" "/@ " xah-wolfram--abhook)
     ("neq" "!= " xah-wolfram--abhook)
     ("neqq" "=!= " xah-wolfram--abhook)
     ("pt" " //Print" xah-wolfram--abhook)
@@ -2770,7 +2756,6 @@ Version: 2025-06-18"
     ("acos" "ArcCos" xah-wolfram--abhook)
     ("asin" "ArcSin" xah-wolfram--abhook)
     ("atan" "ArcTan" xah-wolfram--abhook)
-    ("clr" "Clear" xah-wolfram--abhook)
     ("inf" "Infinity" xah-wolfram--abhook)
     ("len" "Length" xah-wolfram--abhook)
     ("lim" "Limit" xah-wolfram--abhook)
@@ -2785,6 +2770,7 @@ Version: 2025-06-18"
     ("asso" "Association" xah-wolfram--abhook)
     ("flfm" "FullForm" xah-wolfram--abhook)
     ("fn" "Function" xah-wolfram--abhook)
+    ("w" "With" xah-wolfram--abhook)
 
     ("regex" "RegularExpression" xah-wolfram--abhook)
     ("rpa" "ReplaceAll" xah-wolfram--abhook)
@@ -2819,20 +2805,29 @@ Version: 2025-06-18"
   )
 
 ;; generate abbrev. simple lowercase to cap, symbol but is not function. adding a space at end
-(mapc (lambda (x) (define-abbrev xah-wolfram-mode-abbrev-table x (concat (upcase-initials x) " ") 'xah-wolfram--abhook))
-      '(
-        ;;
+(mapc
+ (lambda (x)
+   (define-abbrev xah-wolfram-mode-abbrev-table
+     (car x)
+     (concat (cdr x) " ") 'xah-wolfram--abhook))
+ (list
+  ;;
 
-        "axes"
-        "degree"
-        "false"
-        "frame"
-        "none"
-        "pi"
-        "true"
+  (cons "sameq" "SameQ[▮,y]")
+  (cons "clear" "Clear[▮]")
 
-        ;;
-        ))
+  (cons "axes" "Axes -> True")
+  (cons "frame" "Frame -> True")
+
+  (cons "degree" "Degree")
+
+  (cons "none" "None")
+  (cons "pi" "Pi")
+
+  (cons "true" "True")
+  (cons "false" "False")
+  ;;
+  ))
 
 ;; generate abbrev. simple lowercase to cap, functions
 
