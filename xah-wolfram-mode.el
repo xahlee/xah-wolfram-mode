@@ -3,7 +3,7 @@
 ;; Copyright © 2021, 2025 by Xah Lee
 
 ;; Author: Xah Lee ( http://xahlee.info/ )
-;; Version: 2.21.20250731163229
+;; Version: 2.21.20250806094557
 ;; Created: 2021-07-24
 ;; Package-Requires: ((emacs "28.3"))
 ;; Keywords: languages, Wolfram Language, Mathematica
@@ -2701,7 +2701,7 @@ Version: 2025-04-10"
   (define-key xah-wolfram-leader-map (kbd "c") #'xah-wolfram-format-compact)
   (define-key xah-wolfram-leader-map (kbd "<backspace>") #'xah-wolfram-smart-delete-backward)
 
-  (define-key xah-wolfram-leader-map (kbd "TAB") #'xah-wolfram-format-pretty)
+  (define-key xah-wolfram-leader-map (kbd "f") #'xah-wolfram-format-pretty)
   (define-key xah-wolfram-leader-map (kbd "r") #'xah-wolfram-eval-region)
   (define-key xah-wolfram-leader-map (kbd "h") #'xah-wolfram-doc-lookup)
   (define-key xah-wolfram-leader-map (kbd "l") #'xah-wolfram-eval-current-line)
@@ -2785,8 +2785,9 @@ Version: 2025-06-18"
     ("Graphics3D" "Graphics3D[▮, Axes -> True ]" xah-wolfram--abhook)
     ("If" "If[ ▮, y, n]" xah-wolfram--abhook)
     ("Limit" "Limit[x▮ , {x -> Infinity }]" xah-wolfram--abhook)
-    ("Map" "Map[▮, list, {1}]" xah-wolfram--abhook)
+    ("Map" "Map[▮, list]" xah-wolfram--abhook)
     ("Module" "Module[{x=2▮}, expr]" xah-wolfram--abhook)
+    ("Block" "Block[{x=2▮}, expr]" xah-wolfram--abhook)
     ("ParametricPlot3D" "ParametricPlot3D[{Cos[u]*(2 + 1*Cos[v]), Sin[u]*(2 + 1*Cos[v]), 1*Sin[v]} , {u, 0, 6}, {v, 0, 6}, PlotPoints -> 100, Axes -> True, Boxed -> True, BoundaryStyle -> Directive[Black, Thin], PlotStyle -> Directive[White, Opacity[0.7], Specularity[10, 20]], Lighting -> \"Neutral\"]" xah-wolfram--abhook)
     ("Plot" "Plot[ Sin[x], {x, 1, 9}]" xah-wolfram--abhook)
     ("PlotRange" "PlotRange->{9▮}" xah-wolfram--abhook)
@@ -2804,37 +2805,71 @@ Version: 2025-06-18"
   :enable-function 'xah-wolfram--abb-enable-f
   )
 
-;; generate abbrev. simple lowercase to cap, symbol but is not function. adding a space at end
+;; generate abbrev. lowercase to cap, functions
 (mapc
- (lambda (x)
-   (define-abbrev xah-wolfram-mode-abbrev-table
-     (car x)
-     (concat (cdr x) " ") 'xah-wolfram--abhook))
- (list
-  ;;
+ (lambda (x) (define-abbrev xah-wolfram-mode-abbrev-table x (upcase-initials x) 'xah-wolfram--abhook))
 
-  (cons "sameq" "SameQ[▮,y]")
-  (cons "clear" "Clear[▮]")
+'(
 
-  (cons "axes" "Axes -> True")
-  (cons "frame" "Frame -> True")
+"if"
+"map"
+"n"
 
-  (cons "degree" "Degree")
+"false"
+"true"
+"none"
 
-  (cons "none" "None")
-  (cons "pi" "Pi")
+"pi"
+"degree"
 
-  (cons "true" "True")
-  (cons "false" "False")
-  ;;
-  ))
+"module"
+"block"
+"with"
 
-;; generate abbrev. simple lowercase to cap, functions
+"plot"
 
-(mapc (lambda (x) (define-abbrev xah-wolfram-mode-abbrev-table x (upcase-initials x) 'xah-wolfram--abhook)) '( "if" "map" "module" "with" "plot" "range" "table" "sin" "cos" "tan" "power" "product" "sum" "point" "polygon" "first" "last" "part" ))
+"frame"
+"axes"
+
+"sameq"
+"clear"
+
+"range"
+"table"
+
+"sin"
+"cos"
+"tan"
+"power"
+"product"
+"sum"
+
+"point"
+"polygon"
+
+"first"
+"last"
+"part"
+
+;; 
+
+))
 
 ;; generate abbrev for simple template of functions. just add []
-(mapc (lambda (x) (define-abbrev xah-wolfram-mode-abbrev-table x (concat x "[▮]") 'xah-wolfram--abhook)) '( "Sin" "Cos" "Tan" "ArcSin" "ArcCos" "ArcTan" "Clear" ))
+(mapc
+ (lambda (x) (define-abbrev xah-wolfram-mode-abbrev-table x (concat x "[▮]") 'xah-wolfram--abhook))
+'("Sin"
+"Cos"
+"Tan"
+"ArcSin"
+"ArcCos"
+"ArcTan"
+"SameQ"
+"Clear"))
+
+(mapc
+ (lambda (x) (define-abbrev xah-wolfram-mode-abbrev-table x (concat x " -> True") 'xah-wolfram--abhook))
+'("Axes" "Frame" ))
 
 ;; HHHH------------------------------
 
