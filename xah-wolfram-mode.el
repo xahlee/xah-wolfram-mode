@@ -3,7 +3,7 @@
 ;; Copyright © 2021, 2025 by Xah Lee
 
 ;; Author: Xah Lee ( http://xahlee.info/ )
-;; Version: 2.21.20250806094557
+;; Version: 2.21.20250816085822
 ;; Created: 2021-07-24
 ;; Package-Requires: ((emacs "28.3"))
 ;; Keywords: languages, Wolfram Language, Mathematica
@@ -86,9 +86,9 @@ Version: 2025-07-31"
   (interactive (append (if (region-active-p) (list (region-beginning) (region-end)) (list (save-excursion (if (re-search-backward "\n[ \t]*\n" nil 1) (match-end 0) (point))) (save-excursion (if (re-search-forward "\n[ \t]*\n" nil 1) (match-beginning 0) (point))))) current-prefix-arg nil))
   (let ((xcode (buffer-substring-no-properties Begin End))
         (xoutbuf (get-buffer-create "*xah-wolfram-eval output*")))
-    (message "running: wolframscript -charset UTF8 -print all -code ...")
+    (message "running: wolframscript -print all -code ...")
     (with-current-buffer xoutbuf (erase-buffer))
-    (call-process "wolframscript" nil xoutbuf nil "-charset" "UTF8" "-print" "all" "-code" xcode)
+    (call-process "wolframscript" nil xoutbuf nil "-print" "all" "-code" xcode)
     (if Xinsert
         (progn
           (goto-char End)
@@ -2780,19 +2780,19 @@ Version: 2025-06-18"
 
     ("Association" "Association[▮ a -> 1, b -> 2]" xah-wolfram--abhook)
     ("Function" "Function[x, ▮expr]" xah-wolfram--abhook)
-    ("GeometricTransformation" "GeometricTransformation[▮,tf]" xah-wolfram--abhook)
-    ("Graphics" "Graphics[▮, Axes -> True ]" xah-wolfram--abhook)
-    ("Graphics3D" "Graphics3D[▮, Axes -> True ]" xah-wolfram--abhook)
+    ("GeometricTransformation" "GeometricTransformation[ ▮,tf]" xah-wolfram--abhook)
+    ("Graphics" "Graphics[ ▮, Axes -> True ]" xah-wolfram--abhook)
+    ("Graphics3D" "Graphics3D[ ▮, Axes -> True ]" xah-wolfram--abhook)
     ("If" "If[ ▮, y, n]" xah-wolfram--abhook)
     ("Limit" "Limit[x▮ , {x -> Infinity }]" xah-wolfram--abhook)
-    ("Map" "Map[▮, list]" xah-wolfram--abhook)
+    ("Map" "Map[ ▮, list]" xah-wolfram--abhook)
     ("Module" "Module[{x=2▮}, expr]" xah-wolfram--abhook)
     ("Block" "Block[{x=2▮}, expr]" xah-wolfram--abhook)
     ("ParametricPlot3D" "ParametricPlot3D[{Cos[u]*(2 + 1*Cos[v]), Sin[u]*(2 + 1*Cos[v]), 1*Sin[v]} , {u, 0, 6}, {v, 0, 6}, PlotPoints -> 100, Axes -> True, Boxed -> True, BoundaryStyle -> Directive[Black, Thin], PlotStyle -> Directive[White, Opacity[0.7], Specularity[10, 20]], Lighting -> \"Neutral\"]" xah-wolfram--abhook)
     ("Plot" "Plot[ Sin[x], {x, 1, 9}]" xah-wolfram--abhook)
     ("PlotRange" "PlotRange->{9▮}" xah-wolfram--abhook)
     ("RegularExpression" "RegularExpression[\"▮\"]" xah-wolfram--abhook)
-    ("ReplaceAll" "ReplaceAll[▮, {x_ -> 3}]" xah-wolfram--abhook)
+    ("ReplaceAll" "ReplaceAll[ ▮, {x_ -> 3}]" xah-wolfram--abhook)
     ("Table" "Table[ ▮, {x, 1, 5}]" xah-wolfram--abhook)
     ("With" "With[{x=2▮}, expr]" xah-wolfram--abhook)
 
@@ -2850,6 +2850,8 @@ Version: 2025-06-18"
 "first"
 "last"
 "part"
+
+"rule"
 
 ;; 
 
