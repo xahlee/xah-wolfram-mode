@@ -1,9 +1,9 @@
 ;;; xah-wolfram-mode.el --- Major mode for editing Wolfram Language. -*- coding: utf-8; lexical-binding: t; -*-
 
-;; Copyright © 2021, 2025 by Xah Lee
+;; Copyright © 2021, 2026 by Xah Lee
 
 ;; Author: Xah Lee ( http://xahlee.info/ )
-;; Version: 2.21.20250816085822
+;; Version: 2.22.20260306194631
 ;; Created: 2021-07-24
 ;; Package-Requires: ((emacs "28.3"))
 ;; Keywords: languages, Wolfram Language, Mathematica
@@ -42,7 +42,7 @@
 ;; you can change it by put this in your emacs init, before loading the mode
 ;; (setq xah-major-leader-key "<f6>")
 
-;; HHHH------------------------------
+;; s------------------------------
 ;;; Code:
 
 
@@ -2324,7 +2324,7 @@ nil
        xah-wolfram-dollar-names
        ))
 
-;; HHHH------------------------------
+;; s------------------------------
 
 (defun xah-wolfram-doc-lookup ()
   "Look up the symbol under cursor in Wolfram doc site in web browser.
@@ -2463,30 +2463,44 @@ Version: 2021-08-06"
   (interactive)
   (insert ";\n"))
 
-;; HHHH------------------------------
+;; s------------------------------
 ;; indent/reformat related
 
 (defun xah-wolfram-replace-named-chars ()
-  "Replace \\[Pi] by Pi in current text block.
-Also replace
-\\[Infinity] → Infinity
-\\[Equal] → ==
+  "Replace special named chars in current text block or selection, also backslash at end of line.
+e.g. 
+\\[Pi] become Pi
+\\[Infinity] become Infinity
+\\[Equal] become ==
 and few others.
 
 Created: 2024-02-07
-Version: 2025-03-25"
+Version: 2026-03-06"
   (interactive)
   (save-excursion
     (let (xbeg xend)
-      (seq-setq (xbeg xend) (if (region-active-p) (list (region-beginning) (region-end)) (list (save-excursion (if (re-search-backward "\n[ \t]*\n" nil 1) (match-end 0) (point))) (save-excursion (if (re-search-forward "\n[ \t]*\n" nil 1) (match-beginning 0) (point))))))
+      (setq xbeg (if (region-active-p) (region-beginning) (save-excursion (if (re-search-backward "\n[ \t]*\n" nil 1) (match-end 0) (point)))) xend (if (region-active-p) (region-end) (save-excursion (if (re-search-forward "\n[ \t]*\n" nil 1) (match-beginning 0) (point)))))
       (save-restriction
         (narrow-to-region xbeg xend)
         (let ((case-fold-search nil))
-          (progn (goto-char (point-min)) (while (search-forward "\\[Pi]" nil t) (replace-match "Pi")))
-          (progn (goto-char (point-min)) (while (search-forward "\\[Infinity]" nil t) (replace-match "Infinity")))
-          (progn (goto-char (point-min)) (while (search-forward "\\[Rule]" nil t) (replace-match "->")))
-          (progn (goto-char (point-min)) (while (search-forward "\\[Equal]" nil t) (replace-match "==")))
-          (progn (goto-char (point-min)) (while (search-forward "°" nil t) (replace-match "Degree")))
+
+          (goto-char (point-min))
+          (while (search-forward "\\\n" nil t) (replace-match ""))
+
+          (goto-char (point-min))
+          (while (search-forward "\\[Pi]" nil t) (replace-match "Pi"))
+          (goto-char (point-min))
+          (while (search-forward "\\[Infinity]" nil t) (replace-match "Infinity"))
+          (goto-char (point-min))
+          (while (search-forward "\\[Rule]" nil t) (replace-match "->"))
+          (goto-char (point-min))
+          (while (search-forward "\\[Equal]" nil t) (replace-match "=="))
+          (goto-char (point-min))
+          (while (search-forward "°" nil t) (replace-match "Degree"))
+          (goto-char (point-min))
+          (while (search-forward "\\[Alpha]" nil t) (replace-match "α"))
+          (goto-char (point-min))
+          (while (search-forward "\\[Beta]" nil t) (replace-match "β"))
           ;;
           )))))
 
@@ -2497,7 +2511,7 @@ Created: 2021-08-01
 Version: 2025-06-09"
   (interactive)
   (let (xbeg xend)
-    (seq-setq (xbeg xend) (if (region-active-p) (list (region-beginning) (region-end)) (list (save-excursion (if (re-search-backward "\n[ \t]*\n" nil 1) (match-end 0) (point))) (save-excursion (if (re-search-forward "\n[ \t]*\n" nil 1) (match-beginning 0) (point))))))
+    (setq xbeg (if (region-active-p) (region-beginning) (save-excursion (if (re-search-backward "\n[ \t]*\n" nil 1) (match-end 0) (point)))) xend (if (region-active-p) (region-end) (save-excursion (if (re-search-forward "\n[ \t]*\n" nil 1) (match-beginning 0) (point)))))
     (save-restriction
       (narrow-to-region xbeg xend)
       (xah-wolfram--replace-regexp-pairs
@@ -2529,15 +2543,19 @@ Version: 2025-06-09"
   "Format current block in readable style.
 xtodo: not very good. should call kernel to do this.
 Created: 2021-07-25
-Version: 2025-03-25"
+Version: 2025-08-16"
   (interactive)
   (let (xbeg xend)
-    (seq-setq (xbeg xend) (if (region-active-p) (list (region-beginning) (region-end)) (list (save-excursion (if (re-search-backward "\n[ \t]*\n" nil 1) (match-end 0) (point))) (save-excursion (if (re-search-forward "\n[ \t]*\n" nil 1) (match-beginning 0) (point))))))
+    (setq xbeg (if (region-active-p) (region-beginning) (save-excursion (if (re-search-backward "\n[ \t]*\n" nil 1) (match-end 0) (point)))) xend (if (region-active-p) (region-end) (save-excursion (if (re-search-forward "\n[ \t]*\n" nil 1) (match-beginning 0) (point)))))
     (save-restriction
       (narrow-to-region xbeg xend)
       (xah-wolfram--replace-regexp-pairs
        (point-min) (point-max)
        [
+
+        ;; before square bracket
+        [" \\[" "["]
+
         ;; before comma
         ["\\([]}A-Za-z0-9]\\) ," "\\1,"]
         ;; after comma
@@ -2586,7 +2604,7 @@ Version: 2025-03-25"
         ["\n\n\n+" "\n\n"]
         ]))))
 
-;; HHHH------------------------------
+;; s------------------------------
 ;; completion
 
 (defun xah-wolfram-complete-symbol ()
@@ -2605,7 +2623,7 @@ Version: 2025-04-10"
     (goto-char xbeg)
     (insert xresultW)))
 
-;; HHHH------------------------------
+;; s------------------------------
 ;; syntax table
 
 (defvar xah-wolfram-mode-syntax-table nil "Syntax table for `xah-wolfram-mode'.")
@@ -2650,7 +2668,7 @@ Version: 2025-04-10"
 
    xsynTable))
 
-;; HHHH------------------------------
+;; s------------------------------
 ;; syntax coloring related
 
 (defface xah-wolfram-var-name
@@ -2686,31 +2704,26 @@ Version: 2025-04-10"
 
 ))
 
-;; HHHH------------------------------
+;; s------------------------------
 ;; keybinding
 
-(defvar xah-wolfram-mode-map nil "Keybinding for `xah-wolfram-mode'")
+(defvar xah-wolfram-mode-map nil "Keymap for `xah-wolfram-mode'")
 (progn
   (setq xah-wolfram-mode-map (make-sparse-keymap))
   (define-prefix-command 'xah-wolfram-leader-map)
-
   (define-key xah-wolfram-mode-map (kbd (if (boundp 'xah-major-leader-key) xah-major-leader-key "TAB")) xah-wolfram-leader-map)
-
   (define-key xah-wolfram-leader-map (kbd "SPC") #'xah-wolfram-complete-symbol)
-
   (define-key xah-wolfram-leader-map (kbd "c") #'xah-wolfram-format-compact)
   (define-key xah-wolfram-leader-map (kbd "<backspace>") #'xah-wolfram-smart-delete-backward)
-
   (define-key xah-wolfram-leader-map (kbd "f") #'xah-wolfram-format-pretty)
   (define-key xah-wolfram-leader-map (kbd "r") #'xah-wolfram-eval-region)
   (define-key xah-wolfram-leader-map (kbd "h") #'xah-wolfram-doc-lookup)
   (define-key xah-wolfram-leader-map (kbd "l") #'xah-wolfram-eval-current-line)
   (define-key xah-wolfram-leader-map (kbd "b") #'xah-wolfram-eval-buffer)
   (define-key xah-wolfram-leader-map (kbd "t") #'xah-wolfram-replace-named-chars)
-
   (define-key xah-wolfram-leader-map (kbd "<return>") #'xah-wolfram-smart-newline))
 
-;; HHHH------------------------------
+;; s------------------------------
 ;; abbrev
 
 (defun xah-wolfram--abhook ()
@@ -2727,9 +2740,8 @@ t)
 This is for abbrev table property `:enable-function'.
 Created: 2021-07-24
 Version: 2025-06-18"
-  ;; (let ((xsyntaxState (syntax-ppss)))
-  ;;   (not (or (nth 3 xsyntaxState) (nth 4 xsyntaxState))))
-  t)
+  (let ((xsyntaxState (syntax-ppss)))
+    (not (or (nth 3 xsyntaxState) (nth 4 xsyntaxState)))))
 
 (defvar xah-wolfram-mode-abbrev-table nil "abbrev table" )
 
@@ -2750,6 +2762,7 @@ Version: 2025-06-18"
     ("ra" "-> " xah-wolfram--abhook)
     ("same" "=== " xah-wolfram--abhook)
     ("var" "▮x = 3" xah-wolfram--abhook)
+    ("fn" "((▮ #) &)" xah-wolfram--abhook)
 
     ;; common abbrevs
 
@@ -2769,7 +2782,8 @@ Version: 2025-06-18"
 
     ("asso" "Association" xah-wolfram--abhook)
     ("flfm" "FullForm" xah-wolfram--abhook)
-    ("fn" "Function" xah-wolfram--abhook)
+    ("fun" "Function" xah-wolfram--abhook)
+
     ("w" "With" xah-wolfram--abhook)
 
     ("regex" "RegularExpression" xah-wolfram--abhook)
@@ -2785,7 +2799,7 @@ Version: 2025-06-18"
     ("Graphics3D" "Graphics3D[ ▮, Axes -> True ]" xah-wolfram--abhook)
     ("If" "If[ ▮, y, n]" xah-wolfram--abhook)
     ("Limit" "Limit[x▮ , {x -> Infinity }]" xah-wolfram--abhook)
-    ("Map" "Map[ ▮, list]" xah-wolfram--abhook)
+    ("Map" "Map[ Function[x, ▮] , list]" xah-wolfram--abhook)
     ("Module" "Module[{x=2▮}, expr]" xah-wolfram--abhook)
     ("Block" "Block[{x=2▮}, expr]" xah-wolfram--abhook)
     ("ParametricPlot3D" "ParametricPlot3D[{Cos[u]*(2 + 1*Cos[v]), Sin[u]*(2 + 1*Cos[v]), 1*Sin[v]} , {u, 0, 6}, {v, 0, 6}, PlotPoints -> 100, Axes -> True, Boxed -> True, BoundaryStyle -> Directive[Black, Thin], PlotStyle -> Directive[White, Opacity[0.7], Specularity[10, 20]], Lighting -> \"Neutral\"]" xah-wolfram--abhook)
@@ -2802,8 +2816,7 @@ Version: 2025-06-18"
   "Abbrev table for `xah-wolfram-mode'"
   :case-fixed t
   :system t
-  :enable-function 'xah-wolfram--abb-enable-f
-  )
+  :enable-function 'xah-wolfram--abb-enable-f)
 
 ;; generate abbrev. lowercase to cap, functions
 (mapc
@@ -2873,7 +2886,7 @@ Version: 2025-06-18"
  (lambda (x) (define-abbrev xah-wolfram-mode-abbrev-table x (concat x " -> True") 'xah-wolfram--abhook))
 '("Axes" "Frame" ))
 
-;; HHHH------------------------------
+;; s------------------------------
 
 ;;;###autoload
 (define-derived-mode xah-wolfram-mode prog-mode "xah-wolfram"
